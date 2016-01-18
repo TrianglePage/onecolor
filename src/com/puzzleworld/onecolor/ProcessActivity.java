@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.TextView;
 
 public class ProcessActivity extends Activity {
 
@@ -33,6 +34,7 @@ public class ProcessActivity extends Activity {
 	private ImageButton btnPickanother;
 	private Bitmap tmpBitmap;
 	private SeekBar seekBar;
+	private TextView textView;
 	private RatingBar ratingBar;
 	private int value2jni;
 
@@ -45,6 +47,7 @@ public class ProcessActivity extends Activity {
 		btnRestore = (ImageButton) findViewById(R.id.btnRestore);
 		btnSave = (ImageButton) findViewById(R.id.btnSave);
 		btnPickanother = (ImageButton) findViewById(R.id.btnPickanother);
+		textView = (TextView) findViewById(R.id.textView1);
 		
 		//从前一界面获取到选择的图片地址，显示到ImageView中
 		Intent intent = getIntent();
@@ -74,6 +77,7 @@ public class ProcessActivity extends Activity {
 			public void onProgressChanged(SeekBar seekBar, int progress,
 					boolean fromUser) {
 				System.out.println("kevin progress changed-->"+progress);
+				textView.setText(	String.format("%d", progress)+"%");
 				value2jni = progress;
 			}
 		});
