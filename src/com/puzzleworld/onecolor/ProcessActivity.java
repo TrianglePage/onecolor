@@ -86,6 +86,10 @@ public class ProcessActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
+				final Intent intent_share = new Intent();
+				
+				intent_share.setClass(ProcessActivity.this, ShareActivity.class);
+				ProcessActivity.this.startActivity(intent_share);
 
 			}
 		});
