@@ -15,6 +15,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RatingBar;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class ProcessActivity extends Activity {
 
@@ -22,13 +25,16 @@ public class ProcessActivity extends Activity {
 		System.loadLibrary("img_processor");
 	}
 
-	public native int[] ImgFun(int[] buf, int w, int h);
+	public native int[] ImgFun(int[] buf, int w, int h, int value);
 
 	private ImageView ivProcess;
 	private ImageButton btnRestore;
 	private ImageButton btnSave;
 	private ImageButton btnPickanother;
 	private Bitmap tmpBitmap;
+	private SeekBar seekBar;
+	private RatingBar ratingBar;
+	private int value2jni;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +60,24 @@ public class ProcessActivity extends Activity {
 			}
 		}
 
+		//滑动条
+		seekBar = (SeekBar) findViewById(R.id.seekBar1);
+		seekBar.setMax(100);
+
+		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				System.out.println("kevin Start Tracking Touch-->");
+			}
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				System.out.println("kevin Stop Tracking Touch-->");
+			}
+			public void onProgressChanged(SeekBar seekBar, int progress,
+					boolean fromUser) {
+				System.out.println("kevin progress changed-->"+progress);
+				value2jni = progress;
+			}
+		});
+
 		//调用native opencv处理图像
 		ivProcess.setOnClickListener(new OnClickListener() {
 
@@ -66,7 +90,7 @@ public class ProcessActivity extends Activity {
 				int w = tmpBitmap.getWidth(), h = tmpBitmap.getHeight();
 				int[] pix = new int[w * h];
 				tmpBitmap.getPixels(pix, 0, w, 0, 0, w, h);
-				int[] resultInt = ImgFun(pix, w, h);
+				int[] resultInt = ImgFun(pix, w, h, value2jni);
 				Bitmap resultImg = Bitmap.createBitmap(w, h, Config.ARGB_8888);
 				resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
 				ivProcess.setImageBitmap(resultImg);

@@ -1,21 +1,27 @@
 #include<jni.h>
+#include<android/log.h>
 #include<opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/legacy/legacy.hpp>
 #include "stdlib.h"
 #include "stdio.h"
+
+#define TAG    "jni_opencv"
+#define LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,TAG,__VA_ARGS__)
+
 using namespace cv;
 
 extern "C" {
 JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ProcessActivity_ImgFun(
-		JNIEnv* env, jobject obj, jintArray buf, int w, int h);
+		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int value);
 JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ProcessActivity_ImgFun(
-		JNIEnv* env, jobject obj, jintArray buf, int w, int h) {
+		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int value) {
 	jint *cbuf;
 	cbuf = env->GetIntArrayElements(buf, NULL);
 	if (cbuf == NULL) {
 		return 0;
 	}
+	LOGD("kevin jni value = %d", value);
 
 	Mat imgData(h, w, CV_8UC4, (unsigned char*) cbuf);
 	int flags = 4 + (255 << 8) + (CV_FLOODFILL_FIXED_RANGE);
