@@ -8,11 +8,14 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
@@ -26,18 +29,25 @@ public class ProcessActivity extends Activity {
 		System.loadLibrary("img_processor");
 	}
 
-	public native int[] ImgFun(int[] buf, int w, int h, int value);
+	public native int[] ImgFun(int[] buf, int w, int h, int touchX, int touchY, int value);
 
 	private ImageView ivProcess;
 	private ImageButton btnRestore;
 	private ImageButton btnSave;
 	private ImageButton btnPickanother;
-	private Bitmap tmpBitmap;
+	private Bitmap showBitmap;
 	private SeekBar seekBar;
 	private TextView textView;
 	private RatingBar ratingBar;
 	private int value2jni;
+	private int align;
+	private float touchX=0;
+	private float touchY=0;
 
+	final float PIC_MAX_WIDTH = 1920;
+	final float PIC_MAX_HEIGHT = 1080;
+	final int seekbarLevel=4;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -48,41 +58,57 @@ public class ProcessActivity extends Activity {
 		btnSave = (ImageButton) findViewById(R.id.btnSave);
 		btnPickanother = (ImageButton) findViewById(R.id.btnPickanother);
 		textView = (TextView) findViewById(R.id.textView1);
-		
-		//从前一界面获取到选择的图片地址，显示到ImageView中
+
+		// 从前一界面获取到选择的图片地址，显示到ImageView中
 		Intent intent = getIntent();
 		if (intent != null) {
+			align = 2<<(seekbarLevel+1);
 			ContentResolver cr = this.getContentResolver();
 			Uri uri = intent.getParcelableExtra("uri");
 			try {
-				tmpBitmap = BitmapFactory.decodeStream(cr.openInputStream(uri));
-				ivProcess.setImageBitmap(tmpBitmap);
+				Bitmap bm = BitmapFactory.decodeStream(cr.openInputStream(uri));
+				showBitmap = scaleAndAlignBitmap(bm, align);
+				ivProcess.setImageBitmap(showBitmap);
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+		
+		ivProcess.setOnTouchListener(new OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+	            //当按下时获取到屏幕中的xy位置
+                if(event.getAction()==MotionEvent.ACTION_DOWN){
+                	touchX = event.getX();
+                	touchY = event.getY();
+                    Log.e("chz", "touch info: "+event.getX() +","+event.getY());
+                }
+				return false;
+			}
+        });
 
-		//滑动条
+		// 滑动条
 		seekBar = (SeekBar) findViewById(R.id.seekBar1);
-		seekBar.setMax(100);
+		seekBar.setMax(seekbarLevel);
 
 		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				System.out.println("kevin Start Tracking Touch-->");
 			}
+
 			public void onStartTrackingTouch(SeekBar seekBar) {
 				System.out.println("kevin Stop Tracking Touch-->");
 			}
-			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
-				System.out.println("kevin progress changed-->"+progress);
-				textView.setText(	String.format("%d", progress)+"%");
+
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				System.out.println("kevin progress changed-->" + progress);
+				textView.setText(String.format("%d", progress) + "%");
 				value2jni = progress;
 			}
 		});
 
-		//调用native opencv处理图像
+		// 调用native opencv处理图像
 		ivProcess.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -91,10 +117,16 @@ public class ProcessActivity extends Activity {
 				// Bitmap img1 =
 				// Bitmap.createBitmap(ivProcess.getDrawingCache());
 				// ivProcess.setDrawingCacheEnabled(false);
-				int w = tmpBitmap.getWidth(), h = tmpBitmap.getHeight();
+				int w = showBitmap.getWidth(), h = showBitmap.getHeight();
 				int[] pix = new int[w * h];
-				tmpBitmap.getPixels(pix, 0, w, 0, 0, w, h);
-				int[] resultInt = ImgFun(pix, w, h, value2jni);
+				showBitmap.getPixels(pix, 0, w, 0, 0, w, h);
+				Log.i("chz", "img w="+ivProcess.getWidth()+", h="+ivProcess.getHeight()+", bitmap w="+showBitmap.getWidth()+",h="+showBitmap.getHeight());
+				//touchX和touchY是相对imageView控件的，而内部的bitmap宽高与imageView是不同的
+				//这里换算成相对图片的坐标tx，ty
+				int tx = (int) (touchX/ivProcess.getWidth()*showBitmap.getWidth());
+				int ty = (int) (touchY/ivProcess.getHeight()*showBitmap.getHeight());
+				Log.i("chz", "img x="+ivProcess.getX()+",y="+ivProcess.getY()+",touchX="+touchX+",touchY="+touchY+",tx="+tx+",ty="+ty);
+				int[] resultInt = ImgFun(pix, w, h, tx, ty, value2jni);
 				Bitmap resultImg = Bitmap.createBitmap(w, h, Config.ARGB_8888);
 				resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
 				ivProcess.setImageBitmap(resultImg);
@@ -106,7 +138,7 @@ public class ProcessActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				ivProcess.setImageBitmap(tmpBitmap);
+				ivProcess.setImageBitmap(showBitmap);
 			}
 		});
 
@@ -115,7 +147,7 @@ public class ProcessActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				final Intent intent_share = new Intent();
-				
+
 				intent_share.setClass(ProcessActivity.this, ShareActivity.class);
 				ProcessActivity.this.startActivity(intent_share);
 
@@ -145,8 +177,9 @@ public class ProcessActivity extends Activity {
 			Log.i("uri", uri.toString());
 			ContentResolver cr = this.getContentResolver();
 			try {
-				tmpBitmap = BitmapFactory.decodeStream(cr.openInputStream(uri));
-				ivProcess.setImageBitmap(tmpBitmap);
+				Bitmap bm = BitmapFactory.decodeStream(cr.openInputStream(uri));
+				showBitmap = scaleAndAlignBitmap(bm, align);
+				ivProcess.setImageBitmap(showBitmap);
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -156,5 +189,33 @@ public class ProcessActivity extends Activity {
 		}
 		super.onActivityResult(requestCode, resultCode, data);
 	}
+
+	/*
+	 * 压缩和对齐图片，便于算法处理
+	 */
+	private Bitmap scaleAndAlignBitmap(Bitmap bgimage, int align) {
+		int alignedWidth = bgimage.getWidth();
+		int alignedHeight = bgimage.getHeight();
+		Matrix matrix = null;
+		Bitmap scaledBitmap = bgimage;
+		// 如果图片过大，压缩处理
+		if (bgimage.getWidth() > PIC_MAX_WIDTH || bgimage.getHeight() > PIC_MAX_HEIGHT) {
+			float wRatio = PIC_MAX_WIDTH / (float) (bgimage.getWidth());
+			float hRatio = PIC_MAX_HEIGHT / (float) (bgimage.getHeight());
+			float scaleRatio = wRatio > hRatio ? hRatio : wRatio;
+			matrix = new Matrix();
+			matrix.postScale(scaleRatio, scaleRatio);	
+			Log.wtf("chz", "w="+bgimage.getWidth()+",h="+bgimage.getHeight()+",ratio="+scaleRatio);
+			scaledBitmap = Bitmap.createBitmap(bgimage, 0, 0, bgimage.getWidth(), bgimage.getHeight(), matrix, true);	
+		}
+
+		//对齐
+		alignedWidth = (scaledBitmap.getWidth()/align)*align;
+		alignedHeight = (scaledBitmap.getHeight()/align)*align;
+		
+		Log.wtf("chz", "w="+alignedWidth+",h="+alignedHeight);	
+		return Bitmap.createBitmap(scaledBitmap, 0, 0, alignedWidth, alignedHeight, null, true);
+	}
+
 
 }

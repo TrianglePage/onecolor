@@ -13,15 +13,15 @@ using namespace cv;
 
 extern "C" {
 JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ProcessActivity_ImgFun(
-		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int value);
+		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int touchX, int touchY, int level);
 JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ProcessActivity_ImgFun(
-		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int value) {
+		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int touchX, int touchY, int level) {
 	jint *cbuf;
 	cbuf = env->GetIntArrayElements(buf, NULL);
 	if (cbuf == NULL) {
 		return 0;
 	}
-	LOGD("kevin jni value = %d", value);
+	LOGD("kevin jni value = %d w=%d h=%d touchX = %d touchY= %d", level, w, h, touchX, touchY);
 
 	Mat imgData(h, w, CV_8UC4, (unsigned char*) cbuf);
 	int flags = 4 + (255 << 8) + (CV_FLOODFILL_FIXED_RANGE);
@@ -68,7 +68,7 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ProcessActivity_ImgFun
 	cvZero(mask);
 
 	CvSeq* comp = NULL;
-	int level = 1; //进行n层采样
+	//int level = 1; //进行n层采样
 	double threshold1 = 120;
 	double threshold2 = 50; //
 	int comp_count = 0;
@@ -81,7 +81,7 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ProcessActivity_ImgFun
 
 	cvSplit(hsv, h_plane, s, v, 0);
 
-	cvPyrSegmentation(v, gray_dst, storage, &contours, level, threshold1,
+	cvPyrSegmentation(v, gray_dst, storage, &contours, level+1, threshold1,
 			threshold2);
 	cvZero(maskImage);
 	cvZero(show);
@@ -98,7 +98,7 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ProcessActivity_ImgFun
 
 	cvThreshold(maskImage, maskImage, 1, 128, CV_THRESH_BINARY);
 
-	int area = floodFill(mat_dst, mat_mask, cvPoint(w>>1,h>>1), 1, &ccomp,
+	int area = floodFill(mat_dst, mat_mask, cvPoint(touchX,touchY), 1, &ccomp,
 			Scalar(20, 20, 20), Scalar(20, 20, 20), flags);
 
 	cvSetImageROI(maskImage, cvRect(1, 1, size_src.width, size_src.height));
