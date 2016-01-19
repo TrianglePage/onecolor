@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -101,9 +102,12 @@ public class ProcessActivity extends Activity {
 				System.out.println("kevin Stop Tracking Touch-->");
 			}
 
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				System.out.println("kevin progress changed-->" + progress);
-				textView.setText(String.format("%d", progress) + "%");
+			public void onProgressChanged(SeekBar seekBar, int progress,
+					boolean fromUser) {
+				System.out.println("kevin progress changed-->"+progress);
+				textView.getPaint().setFakeBoldText(true);
+				textView.setTextColor(Color.rgb(255, 255, 255));
+				textView.setText(	String.format("%d", progress)+"%");
 				value2jni = progress;
 			}
 		});
