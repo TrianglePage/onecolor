@@ -10,7 +10,7 @@
         android:layout_height="0dp"
         android:layout_weight="0.16"
         android:orientation="vertical"
-        android:gravity="center">"
+        android:gravity="center">
 
 <!-- 
         <ImageView
@@ -71,24 +71,27 @@
             android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:layout_weight="0.3"
+            android:layout_margin="5dp"
             android:scaleType="fitCenter"
             android:background="#00000000"
             android:src="@drawable/restore" />
 
         <ImageButton
-            android:id="@+id/btnSave"
+            android:id="@+id/btnConfirm"
             android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:layout_weight="0.3"
-            android:scaleType="fitCenter"
+            android:layout_margin="5dp"
             android:background="#00000000"
-            android:src="@drawable/save" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/confirm" />
 
         <ImageButton
             android:id="@+id/btnPickanother"
             android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:layout_weight="0.3"
+            android:layout_margin="5dp"
             android:scaleType="fitCenter"
             android:background="#00000000"
             android:src="@drawable/pickupanother" />

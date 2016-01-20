@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -56,7 +57,7 @@ public class ProcessActivity extends Activity {
 
 		ivProcess = (ImageView) findViewById(R.id.ivProcess);
 		btnRestore = (ImageButton) findViewById(R.id.btnRestore);
-		btnSave = (ImageButton) findViewById(R.id.btnSave);
+		btnSave = (ImageButton) findViewById(R.id.btnConfirm);
 		btnPickanother = (ImageButton) findViewById(R.id.btnPickanother);
 		textView = (TextView) findViewById(R.id.textView1);
 
@@ -150,10 +151,12 @@ public class ProcessActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				final Intent intent_share = new Intent();
+				final Intent intent_preview = new Intent();
 
-				intent_share.setClass(ProcessActivity.this, ShareActivity.class);
-				ProcessActivity.this.startActivity(intent_share);
+				intent_preview.setClass(ProcessActivity.this, ResultPreviewActivity.class);
+				Bitmap image = ((BitmapDrawable)ivProcess.getDrawable()).getBitmap();
+				BitmapStore.setBitmap(image);
+				ProcessActivity.this.startActivity(intent_preview);
 
 			}
 		});

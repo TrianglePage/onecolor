@@ -12,6 +12,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.view.View;
 import android.view.View.OnClickListener;
+
 /*
  * logo欢迎首页
  */
