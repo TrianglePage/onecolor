@@ -21,7 +21,8 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Holo">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -30,26 +31,30 @@
         </activity>
         <activity
             android:name=".PickpicActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Holo">
         </activity>
         <activity
             android:name=".ProcessActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Holo" >
         </activity>
         <activity
             android:name=".ResultPreviewActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Holo" >
         </activity>
         <activity
             android:name=".ShareActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Holo" >
         </activity>
         <activity
-		    android:name=".wxapi.WXEntryActivity"  
- 		   android:exported="true"  
-  		   android:screenOrientation="portrait"   
- 		   android:theme="@android:style/Theme.Translucent.NoTitleBar">
-         </activity>
+            android:name=".wxapi.WXEntryActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" >
+        </activity>
     </application>
 
 </manifest>

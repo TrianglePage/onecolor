@@ -6,8 +6,10 @@ import java.util.TimerTask;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.view.View;
@@ -33,7 +35,9 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				Bitmap lightlogo = ((BitmapDrawable) getResources().getDrawable(R.drawable.onecolorlogo_2)).getBitmap();
-				ivLogo.setImageBitmap(lightlogo);
+
+				// ivLogo.setImageBitmap(lightlogo);
+				onClick_fadeout(ivLogo);
 				final Intent intent = new Intent();
 				Timer timer = new Timer();
 				TimerTask task = new TimerTask() {
@@ -44,9 +48,28 @@ public class MainActivity extends Activity {
 						MainActivity.this.startActivity(intent);
 					}
 				};
-				//点击按钮后延时给用户看logo点亮效果。
-				timer.schedule(task, 500);
+				// 点击按钮后延时给用户看logo点亮效果。
+				timer.schedule(task, 1200);
 			}
 		});
 	}
+
+	protected void onPause() {
+		super.onPause();
+		onClick_fadein(ivLogo);
+		Log.i("chz", "onPause");
+	}
+
+	public void onClick_fadeout(ImageView view) {
+		TransitionDrawable drawable = (TransitionDrawable) view.getDrawable();
+		// 从第一个图像切换到第2个图像。其中使用1秒(1000毫秒)时间完成淡入淡出效果
+		drawable.startTransition(1000);
+	}
+
+	public void onClick_fadein(ImageView view) {
+		TransitionDrawable drawable = (TransitionDrawable) view.getDrawable();
+		// 从第2个图像切换到第1个图像。其中使用1秒(1000毫秒)时间完成淡入淡出效果
+		drawable.reverseTransition(1000);
+	}
+
 }

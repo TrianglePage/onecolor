@@ -23,7 +23,7 @@
         android:layout_margin="10dp"
         android:layout_weight="13.95"
         android:paddingBottom="100dp"
-        android:src="@drawable/onecolorlogo_1" />
+        android:src="@drawable/fadeout" />
 
     <ImageButton
         android:id="@+id/btnLightOn"

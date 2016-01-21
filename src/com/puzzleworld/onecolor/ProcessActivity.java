@@ -3,7 +3,10 @@ package com.puzzleworld.onecolor;
 import java.io.FileNotFoundException;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -14,6 +17,9 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -224,5 +230,52 @@ public class ProcessActivity extends Activity {
 		return Bitmap.createBitmap(scaledBitmap, 0, 0, alignedWidth, alignedHeight, null, true);
 	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.main, menu);
+		return true;
+	}
+
+	public boolean onOptionsItemSelected(MenuItem item) {
+		showDialog(this, item.getItemId());
+		return true;
+	}
+	
+	private void showDialog(Context context, int ItemId) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		switch (ItemId) {
+		case R.id.action_about:
+			builder.setTitle("关于");
+			builder.setMessage("声明：\n本应用特别牛逼，请谨慎使用！");
+			builder.setPositiveButton("还是确定", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton) {
+					// setTitle("你懂了");
+				}
+			});
+			builder.setNeutralButton("确定", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton) {
+					// setTitle("你真懂了");
+				}
+			});
+			builder.show();
+			break;
+		case R.id.action_update:
+			builder.setTitle("更新");
+			builder.setMessage("更新文件大小100G，继续下载？？？");
+			builder.setPositiveButton("继续", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton) {
+				}
+			});
+			builder.setNeutralButton("下载", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton) {
+				}
+			});
+			builder.show();
+			break;
+		default:
+			break;
+		}
+	}
 
 }
