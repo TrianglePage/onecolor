@@ -23,9 +23,9 @@ import com.tencent.mm.sdk.openapi.WXWebpageObject;
  */
 public class ShareActivity extends Activity {
 
-	private ImageButton btnWechatShare;
+	private ImageButton btnWechatShare, btnWechatShare1;
 	private IWXAPI wxApi;
-	private static final String APP_ID = "wxcee085215ede750a";
+	//private static final String APP_ID = "wxe288bcf07e6c4a2d";
 
 	
 	@Override
@@ -33,17 +33,28 @@ public class ShareActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_share);
 		
-		wxApi = WXAPIFactory.createWXAPI(this, APP_ID);  
+		wxApi = WXAPIFactory.createWXAPI(this, Constants.APP_ID);  
 		btnWechatShare = (ImageButton) findViewById(R.id.btnWechatShare);
+		btnWechatShare1 = (ImageButton) findViewById(R.id.btnWechatShare1);
+		
 		btnWechatShare.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 
-				wxApi.registerApp(APP_ID);  
-				wechatShare(0);//分享到微信好友  
-				//wechatShare(1);//分享到微信朋友圈
+				wxApi.registerApp(Constants.APP_ID);  
+				wechatShare(1);//分享到微信好友  
 			}
 		});
+
+		btnWechatShare1.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+
+				wxApi.registerApp(Constants.APP_ID);  
+				wechatShare(0);//分享到微信朋友圈
+			}
+		});
+		
 	}
 
 	/** 
@@ -52,12 +63,12 @@ public class ShareActivity extends Activity {
 	 */  
 	private void wechatShare(int flag){  
 	    WXWebpageObject webpage = new WXWebpageObject();  
-	    webpage.webpageUrl = "www.baidu.com";  
+	    webpage.webpageUrl = "http://mobile.baidu.com/#/item?docid=8747088";  
 	    WXMediaMessage msg = new WXMediaMessage(webpage);  
-	    msg.title = "onecolor_puzzorld";  
-	    msg.description = "an app by puzzorld";  
+	    msg.title = "OneColor";  
+	    msg.description = "Color Your Life. An App By PuzzleWorld";  
 	    //这里替换一张自己工程里的图片资源  
-	    Bitmap thumb = BitmapFactory.decodeResource(getResources(), R.drawable.sharewithwechat);  
+	    Bitmap thumb = BitmapFactory.decodeResource(getResources(), R.drawable.onecolorlogo_2);  
 	    msg.setThumbImage(thumb);  
 	      
 	    SendMessageToWX.Req req = new SendMessageToWX.Req();  

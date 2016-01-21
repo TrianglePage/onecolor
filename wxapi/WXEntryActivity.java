@@ -26,11 +26,11 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
     // IWXAPI 是第三方app和微信通信的openapi接口  
     private IWXAPI api;
     /* APPID only for test */
-    public static final String APP_ID = "wxcee085215ede750a";
+    //public static final String APP_ID = "wxe288bcf07e6c4a2d";
     
     @Override  
     protected void onCreate(Bundle savedInstanceState) {  
-        api = WXAPIFactory.createWXAPI(this, APP_ID, false);  
+        api = WXAPIFactory.createWXAPI(this, Constants.APP_ID, false);  
         api.handleIntent(getIntent(), this);  
         super.onCreate(savedInstanceState);  
     }  

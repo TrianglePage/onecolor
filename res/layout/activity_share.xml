@@ -15,14 +15,25 @@
         android:src="@drawable/onecolorlogo_2"/>
     
     <ImageButton
-       android:layout_weight="1"
        android:id="@+id/btnWechatShare"
        android:layout_width="wrap_content"
        android:layout_height="wrap_content"
-       android:layout_marginBottom="50dp"
+       android:layout_margin="10dp"
+       android:layout_weight="1"
        android:layout_gravity="center"
-       android:scaleType="fitCenter"
        android:background="#00000000"
+       android:scaleType="fitCenter"
        android:src="@drawable/sharewithwechat"/>
-    
+
+      <ImageButton
+        android:id="@+id/btnWechatShare1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="50dp"
+        android:layout_weight="1"
+        android:layout_gravity="center"
+        android:background="#00000000"
+        android:scaleType="fitCenter"
+        android:src="@drawable/sharewithwechat1" />
+
 </LinearLayout>
