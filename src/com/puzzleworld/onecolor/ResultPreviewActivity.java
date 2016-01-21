@@ -40,6 +40,7 @@ public class ResultPreviewActivity extends Activity {
 
 		ivPreview = (ImageView) findViewById(R.id.ivPreview);
 		btnSave = (ImageButton) findViewById(R.id.btnSave);
+		btnShare=(ImageButton) findViewById(R.id.btnShare);
 
 		previewBitmap = BitmapStore.getBitmap();
 		ivPreview.setImageBitmap(previewBitmap);
@@ -50,6 +51,18 @@ public class ResultPreviewActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				saveImageToGallery(mContext, previewBitmap);
+			}
+		});
+		
+		btnShare.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				final Intent intent_share = new Intent();
+
+				intent_share.setClass(ResultPreviewActivity.this, ShareActivity.class);
+				ResultPreviewActivity.this.startActivity(intent_share);
+
 			}
 		});
 	}

@@ -24,10 +24,13 @@ import com.tencent.mm.sdk.openapi.WXMediaMessage;
 /** 微信客户端回调activity示例 */  
 public class WXEntryActivity extends Activity implements IWXAPIEventHandler {  
     // IWXAPI 是第三方app和微信通信的openapi接口  
-    private IWXAPI api;  
+    private IWXAPI api;
+    /* APPID only for test */
+    public static final String APP_ID = "wxcee085215ede750a";
+    
     @Override  
     protected void onCreate(Bundle savedInstanceState) {  
-        api = WXAPIFactory.createWXAPI(this, "这里替换第一步申请的APP_ID", false);  
+        api = WXAPIFactory.createWXAPI(this, APP_ID, false);  
         api.handleIntent(getIntent(), this);  
         super.onCreate(savedInstanceState);  
     }  

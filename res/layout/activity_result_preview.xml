@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="@drawable/background"
     android:orientation="vertical" >
 
     <LinearLayout
@@ -32,21 +33,23 @@
 
         <ImageButton
             android:id="@+id/btnSave"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_weight="0.5"
-            android:layout_margin="5dp"
+            android:layout_marginBottom="5dp"
+            android:scaleType="fitCenter"
             android:background="#00000000"
             android:src="@drawable/save" />
 
         <ImageButton
             android:id="@+id/btnShare"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_weight="0.5"
-            android:layout_margin="5dp"
+            android:layout_marginBottom="5dp"
+            android:scaleType="fitCenter"
             android:background="#00000000"
             android:src="@drawable/sharewithwechat" />
     </LinearLayout>

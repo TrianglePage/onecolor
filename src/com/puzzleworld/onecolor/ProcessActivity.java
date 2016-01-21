@@ -108,7 +108,7 @@ public class ProcessActivity extends Activity {
 				System.out.println("kevin progress changed-->"+progress);
 				textView.getPaint().setFakeBoldText(true);
 				textView.setTextColor(Color.rgb(255, 255, 255));
-				textView.setText(	String.format("%d", progress)+"%");
+				textView.setText(	String.format("Level %d", progress)+"%");
 				value2jni = progress;
 			}
 		});

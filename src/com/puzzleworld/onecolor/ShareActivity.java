@@ -25,7 +25,7 @@ public class ShareActivity extends Activity {
 
 	private ImageButton btnWechatShare;
 	private IWXAPI wxApi;
-	private static final String APP_ID = "wxd930ea5d5a258f4f";
+	private static final String APP_ID = "wxcee085215ede750a";
 
 	
 	@Override
