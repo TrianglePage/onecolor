@@ -41,7 +41,7 @@ public class ProcessActivity extends Activity {
 
 	private ImageView ivProcess;
 	private ImageButton btnRestore;
-	private ImageButton btnSave;
+	private ImageButton btnConfirm;
 	private ImageButton btnPickanother;
 	private Bitmap showBitmap;
 	private SeekBar seekBar;
@@ -63,7 +63,7 @@ public class ProcessActivity extends Activity {
 
 		ivProcess = (ImageView) findViewById(R.id.ivProcess);
 		btnRestore = (ImageButton) findViewById(R.id.btnRestore);
-		btnSave = (ImageButton) findViewById(R.id.btnConfirm);
+		btnConfirm = (ImageButton) findViewById(R.id.btnConfirm);
 		btnPickanother = (ImageButton) findViewById(R.id.btnPickanother);
 		textView = (TextView) findViewById(R.id.textView1);
 
@@ -153,7 +153,7 @@ public class ProcessActivity extends Activity {
 			}
 		});
 
-		btnSave.setOnClickListener(new OnClickListener() {
+		btnConfirm.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
