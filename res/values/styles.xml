@@ -17,13 +17,13 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
-    <!-- Õâ¸öÊÇ¼ÓÈëµÄ´úÂë -->
+    
     <style name="mypopwindow_anim_style">
         <item name="android:windowEnterAnimation">@anim/popshow_anim</item>
-        <!-- Ö¸¶¨ÏÔÊ¾µÄ¶¯»­xml -->
+        <!-- Ö¸ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½Ä¶ï¿½ï¿½ï¿½xml -->
 
         <item name="android:windowExitAnimation">@anim/pophidden_anim</item>
-        <!-- Ö¸¶¨ÏûÊ§µÄ¶¯»­xml -->
+        <!-- Ö¸ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ä¶ï¿½ï¿½ï¿½xml -->
     </style>
 
 </resources>
