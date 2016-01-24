@@ -1,4 +1,4 @@
-package com.puzzleworld.onecolor;
+package com.puzzleworld.onecolor.wxapi;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 
+import com.puzzleworld.onecolor.Constants;
 import com.tencent.mm.sdk.openapi.BaseReq;
 import com.tencent.mm.sdk.openapi.BaseResp;
 import com.tencent.mm.sdk.openapi.ConstantsAPI;
@@ -39,8 +40,10 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
   
     @Override  
     public void onResp(BaseResp resp) {  
-        LogManager.show(TAG, "resp.errCode:" + resp.errCode + ",resp.errStr:"  
-                + resp.errStr, 1);  
+        /*LogManager.show(TAG, "resp.errCode:" + resp.errCode + ",resp.errStr:"  
+                + resp.errStr, 1);*/
+    	Log.d("kevin", "resp.errCode:" + resp.errCode + ",resp.errStr:"  
+        + resp.errStr);
         switch (resp.errCode) {  
         case BaseResp.ErrCode.ERR_OK:  
             //分享成功  
