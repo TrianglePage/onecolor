@@ -12,9 +12,9 @@
 using namespace cv;
 
 extern "C" {
-JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ProcessActivity_ImgFun(
+JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
 		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int touchX, int touchY, int level);
-JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ProcessActivity_ImgFun(
+JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
 		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int touchX, int touchY, int level) {
 	jint *cbuf;
 	cbuf = env->GetIntArrayElements(buf, NULL);
