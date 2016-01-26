@@ -33,11 +33,12 @@ import android.widget.TextView;
 
 public class ProcessActivity extends Activity {
 
-	static {
-		System.loadLibrary("img_processor");
-	}
-
-	public native int[] ImgFun(int[] buf, int w, int h, int touchX, int touchY, int value);
+	// static {
+	// System.loadLibrary("img_processor");
+	// }
+	//
+	// public native int[] ImgFun(int[] buf, int w, int h, int touchX, int
+	// touchY, int value);
 
 	private ImageView ivProcess;
 	private ImageButton btnRestore;
@@ -49,19 +50,19 @@ public class ProcessActivity extends Activity {
 	private RatingBar ratingBar;
 	private int value2jni;
 	private int align;
-	private float touchX=0;
-	private float touchY=0;
+	private float touchX = 0;
+	private float touchY = 0;
 
 	final float PIC_MAX_WIDTH = 1920;
 	final float PIC_MAX_HEIGHT = 1080;
-	final int seekbarLevel=4;
-	
+	final int seekbarLevel = 4;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_process);
 
-		ivProcess = (ImageView) findViewById(R.id.ivProcess);
+		ivProcess = (ScaleImageView) findViewById(R.id.ivProcess);
 		btnRestore = (ImageButton) findViewById(R.id.btnRestore);
 		btnConfirm = (ImageButton) findViewById(R.id.btnConfirm);
 		btnPickanother = (ImageButton) findViewById(R.id.btnPickanother);
@@ -70,31 +71,31 @@ public class ProcessActivity extends Activity {
 		// 从前一界面获取到选择的图片地址，显示到ImageView中
 		Intent intent = getIntent();
 		if (intent != null) {
-			align = 2<<(seekbarLevel+1);
+			align = 2 << (seekbarLevel + 1);
 			ContentResolver cr = this.getContentResolver();
 			Uri uri = intent.getParcelableExtra("uri");
 			try {
 				Bitmap bm = BitmapFactory.decodeStream(cr.openInputStream(uri));
 				showBitmap = scaleAndAlignBitmap(bm, align);
-				ivProcess.setImageBitmap(showBitmap);
+				BitmapStore.setBitmap(showBitmap);
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		
+
 		ivProcess.setOnTouchListener(new OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-	            //当按下时获取到屏幕中的xy位置
-                if(event.getAction()==MotionEvent.ACTION_DOWN){
-                	touchX = event.getX();
-                	touchY = event.getY();
-                    Log.e("chz", "touch info: "+event.getX() +","+event.getY());
-                }
+				// 当按下时获取到屏幕中的xy位置
+				if (event.getAction() == MotionEvent.ACTION_DOWN) {
+					touchX = event.getX();
+					touchY = event.getY();
+					Log.e("chz", "touch info: " + event.getX() + "," + event.getY());
+				}
 				return false;
 			}
-        });
+		});
 
 		// 滑动条
 		seekBar = (SeekBar) findViewById(R.id.seekBar1);
@@ -109,12 +110,11 @@ public class ProcessActivity extends Activity {
 				System.out.println("kevin Stop Tracking Touch-->");
 			}
 
-			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
-				System.out.println("kevin progress changed-->"+progress);
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				System.out.println("kevin progress changed-->" + progress);
 				textView.getPaint().setFakeBoldText(true);
 				textView.setTextColor(Color.rgb(255, 255, 255));
-				textView.setText(	String.format("Level[0~4] %d", progress));
+				textView.setText(String.format("Level[0~4] %d", progress));
 				value2jni = progress;
 			}
 		});
@@ -131,16 +131,19 @@ public class ProcessActivity extends Activity {
 				int w = showBitmap.getWidth(), h = showBitmap.getHeight();
 				int[] pix = new int[w * h];
 				showBitmap.getPixels(pix, 0, w, 0, 0, w, h);
-				Log.i("chz", "img w="+ivProcess.getWidth()+", h="+ivProcess.getHeight()+", bitmap w="+showBitmap.getWidth()+",h="+showBitmap.getHeight());
-				//touchX和touchY是相对imageView控件的，而内部的bitmap宽高与imageView是不同的
-				//这里换算成相对图片的坐标tx，ty
-				int tx = (int) (touchX/ivProcess.getWidth()*showBitmap.getWidth());
-				int ty = (int) (touchY/ivProcess.getHeight()*showBitmap.getHeight());
-				Log.i("chz", "img x="+ivProcess.getX()+",y="+ivProcess.getY()+",touchX="+touchX+",touchY="+touchY+",tx="+tx+",ty="+ty);
-				int[] resultInt = ImgFun(pix, w, h, tx, ty, value2jni);
-				Bitmap resultImg = Bitmap.createBitmap(w, h, Config.ARGB_8888);
-				resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
-				ivProcess.setImageBitmap(resultImg);
+				Log.i("chz", "img w=" + ivProcess.getWidth() + ", h=" + ivProcess.getHeight() + ", bitmap w="
+						+ showBitmap.getWidth() + ",h=" + showBitmap.getHeight());
+				// touchX和touchY是相对imageView控件的，而内部的bitmap宽高与imageView是不同的
+				// 这里换算成相对图片的坐标tx，ty
+				int tx = (int) (touchX / ivProcess.getWidth() * showBitmap.getWidth());
+				int ty = (int) (touchY / ivProcess.getHeight() * showBitmap.getHeight());
+				// Log.i("chz", "img
+				// x="+ivProcess.getX()+",y="+ivProcess.getY()+",touchX="+touchX+",touchY="+touchY+",tx="+tx+",ty="+ty);
+				// int[] resultInt = ImgFun(pix, w, h, tx, ty, value2jni);
+				// Bitmap resultImg = Bitmap.createBitmap(w, h,
+				// Config.ARGB_8888);
+				// resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
+				// ivProcess.setImageBitmap(resultImg);
 			}
 		});
 
@@ -160,7 +163,7 @@ public class ProcessActivity extends Activity {
 				final Intent intent_preview = new Intent();
 
 				intent_preview.setClass(ProcessActivity.this, ResultPreviewActivity.class);
-				Bitmap image = ((BitmapDrawable)ivProcess.getDrawable()).getBitmap();
+				Bitmap image = ((BitmapDrawable) ivProcess.getDrawable()).getBitmap();
 				BitmapStore.setBitmap(image);
 				ProcessActivity.this.startActivity(intent_preview);
 
@@ -182,9 +185,21 @@ public class ProcessActivity extends Activity {
 		});
 	}
 
+	protected void onResume() {
+		super.onResume();
+
+	};
+
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+		Bitmap currentBitmap = BitmapStore.getBitmap();
+		ivProcess.setImageBitmap(currentBitmap);
+	}
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		Log.e("md", "caocaocao");
+		super.onActivityResult(requestCode, resultCode, data);
 		if (resultCode == RESULT_OK) {
 			Uri uri = data.getData();
 			Log.i("uri", uri.toString());
@@ -192,7 +207,8 @@ public class ProcessActivity extends Activity {
 			try {
 				Bitmap bm = BitmapFactory.decodeStream(cr.openInputStream(uri));
 				showBitmap = scaleAndAlignBitmap(bm, align);
-				ivProcess.setImageBitmap(showBitmap);
+				BitmapStore.setBitmap(showBitmap);
+				// ivProcess.setImageBitmap(showBitmap);
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -200,7 +216,6 @@ public class ProcessActivity extends Activity {
 		} else {
 			Log.e("PickpicActivity", "pick up picture failed!");
 		}
-		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	/*
@@ -217,16 +232,16 @@ public class ProcessActivity extends Activity {
 			float hRatio = PIC_MAX_HEIGHT / (float) (bgimage.getHeight());
 			float scaleRatio = wRatio > hRatio ? hRatio : wRatio;
 			matrix = new Matrix();
-			matrix.postScale(scaleRatio, scaleRatio);	
-			Log.wtf("chz", "w="+bgimage.getWidth()+",h="+bgimage.getHeight()+",ratio="+scaleRatio);
-			scaledBitmap = Bitmap.createBitmap(bgimage, 0, 0, bgimage.getWidth(), bgimage.getHeight(), matrix, true);	
+			matrix.postScale(scaleRatio, scaleRatio);
+			Log.wtf("chz", "w=" + bgimage.getWidth() + ",h=" + bgimage.getHeight() + ",ratio=" + scaleRatio);
+			scaledBitmap = Bitmap.createBitmap(bgimage, 0, 0, bgimage.getWidth(), bgimage.getHeight(), matrix, true);
 		}
 
-		//对齐
-		alignedWidth = (scaledBitmap.getWidth()/align)*align;
-		alignedHeight = (scaledBitmap.getHeight()/align)*align;
-		
-		Log.wtf("chz", "w="+alignedWidth+",h="+alignedHeight);	
+		// 对齐
+		alignedWidth = (scaledBitmap.getWidth() / align) * align;
+		alignedHeight = (scaledBitmap.getHeight() / align) * align;
+
+		Log.wtf("chz", "w=" + alignedWidth + ",h=" + alignedHeight);
 		return Bitmap.createBitmap(scaledBitmap, 0, 0, alignedWidth, alignedHeight, null, true);
 	}
 
@@ -241,7 +256,7 @@ public class ProcessActivity extends Activity {
 		showDialog(this, item.getItemId());
 		return true;
 	}
-	
+
 	private void showDialog(Context context, int ItemId) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(context);
 		switch (ItemId) {

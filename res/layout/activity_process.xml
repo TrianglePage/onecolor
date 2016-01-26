@@ -40,12 +40,12 @@
         android:orientation="vertical" >
 
 
-        <ImageView
+        <com.puzzleworld.onecolor.ScaleImageView
             android:id="@+id/ivProcess"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="0.95"
-            android:scaleType="fitCenter"
+            android:scaleType="matrix"
             android:src="@drawable/meinv" />
 
         <SeekBar
