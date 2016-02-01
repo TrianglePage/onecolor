@@ -1,9 +1,37 @@
 package com.puzzleworld.onecolor;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+
+import com.puzzleworld.onecolor.wbapi.AccessTokenKeeper;
+import com.sina.weibo.sdk.api.ImageObject;
+import com.sina.weibo.sdk.api.MusicObject;
+import com.sina.weibo.sdk.api.TextObject;
+import com.sina.weibo.sdk.api.VideoObject;
+import com.sina.weibo.sdk.api.VoiceObject;
+import com.sina.weibo.sdk.api.WebpageObject;
+import com.sina.weibo.sdk.api.WeiboMessage;
+import com.sina.weibo.sdk.api.WeiboMultiMessage;
+import com.sina.weibo.sdk.api.share.BaseResponse;
+import com.sina.weibo.sdk.api.share.IWeiboShareAPI;
+import com.sina.weibo.sdk.api.share.IWeiboDownloadListener;
+import com.sina.weibo.sdk.api.share.IWeiboHandler;
+import com.sina.weibo.sdk.api.share.SendMessageToWeiboRequest;
+import com.sina.weibo.sdk.api.share.SendMultiMessageToWeiboRequest;
+import com.sina.weibo.sdk.api.share.WeiboShareSDK;
+import com.sina.weibo.sdk.constant.WBConstants;
+import com.sina.weibo.sdk.exception.WeiboShareException;
+import com.sina.weibo.sdk.utils.Utility;
+import com.sina.weibo.sdk.auth.Oauth2AccessToken;
+import com.sina.weibo.sdk.auth.WeiboAuth;
+import com.sina.weibo.sdk.auth.WeiboAuthListener;
+import com.sina.weibo.sdk.auth.sso.SsoHandler;
+import com.sina.weibo.sdk.exception.WeiboException;
 
 import com.tencent.mm.sdk.openapi.IWXAPI;
 import com.tencent.mm.sdk.openapi.SendMessageToWX;
@@ -14,9 +42,11 @@ import com.tencent.mm.sdk.platformtools.Util;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -26,6 +56,7 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.PopupWindow.OnDismissListener;
 import android.widget.Toast;
 import android.graphics.Bitmap;
@@ -36,6 +67,7 @@ import android.media.MediaScannerConnection;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 
 /*
  * 处理后图片确认界面
@@ -47,16 +79,48 @@ public class ResultPreviewActivity extends Activity {
 	private ImageButton btnShare;
 	private Bitmap previewBitmap;
 	private Bitmap ShareBitmap;
+	private Bitmap shareCompBitmap;
 	private Context mContext;
 	private IWXAPI wxApi;
 	private final int THUMB_SIZE = 200;
+
+
+	/** 显示认证后的信息，如 AccessToken */
+    private TextView mTokenText;
+	/** 微博 Web 授权类，提供登陆等功能  */
+    private WeiboAuth mWeiboAuth;
+    /** 封装了 "access_token"，"expires_in"，"refresh_token"，并提供了他们的管理功能  */
+    private Oauth2AccessToken mAccessToken;
+    /** 注意：SsoHandler 仅当 SDK 支持 SSO 时有效 */
+    private SsoHandler mSsoHandler;
+
+    /** 微博微博分享接口实例 */
+    private IWeiboShareAPI  mWeiboShareAPI = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_result_preview);
 
+		//Create WeChat Instantiation
 		wxApi = WXAPIFactory.createWXAPI(this, Constants.APP_ID);
+
+        // Create WeiBo Instantiation
+        mWeiboAuth = new WeiboAuth(this, Constants.APP_KEY, Constants.REDIRECT_URL, Constants.SCOPE);
+        // 创建微博分享接口实例
+        mWeiboShareAPI = WeiboShareSDK.createWeiboAPI(this, Constants.APP_KEY);
+
+        // 如果未安装微博客户端，设置下载微博对应的回调
+        if (!mWeiboShareAPI.isWeiboAppInstalled()) {
+            mWeiboShareAPI.registerWeiboDownloadListener(new IWeiboDownloadListener() {
+                @Override
+                public void onCancel() {
+                    Toast.makeText(ResultPreviewActivity.this,
+                            R.string.weibosdk_demo_cancel_download_weibo,
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
 
 		ivPreview = (ImageView) findViewById(R.id.ivPreview);
 		btnSave = (ImageButton) findViewById(R.id.btnSave);
@@ -172,10 +236,31 @@ public class ResultPreviewActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
+				mAccessToken = AccessTokenKeeper.readAccessToken(ResultPreviewActivity.this);
 
-				System.out.println("第三个按钮被点击了");
+				if (mAccessToken.isSessionValid()) {
+					mWeiboShareAPI.registerApp();
+
+					// TODO发微博
+					Bitmap bmp, WaterMarkbmp;
+					ShareBitmap = BitmapStore.getBitmap();
+					WaterMarkbmp = BitmapFactory.decodeResource(getResources(), R.drawable.watermark_small_70);
+					// 加水印
+					bmp = createBitmap(ShareBitmap, WaterMarkbmp);
+
+					reqMsg(bmp);
+				} else {
+					/** 不使用SSO方式进行授权验证 */
+					// mWeibo.anthorize(AppMain.this, new AuthDialogListener());
+
+					/** 使用SSO方式进行授权验证 */
+					mSsoHandler = new SsoHandler(ResultPreviewActivity.this, mWeiboAuth);
+					mSsoHandler.authorize(new AuthListener());
+				}
+
 			}
 		});
+
 		// popWindow消失监听方法
 		window.setOnDismissListener(new OnDismissListener() {
 
@@ -188,6 +273,35 @@ public class ResultPreviewActivity extends Activity {
 	}
 
 	/**
+	 * 向weibo 客户端注册发送一个携带：文字、图片等数据
+	 *
+	 * @param bitmap
+	 */
+	public void reqMsg(Bitmap bitmap) {
+
+		/*图片对象*/
+		ImageObject imageobj = new ImageObject();
+
+		if (bitmap != null) {
+			imageobj.setImageObject(bitmap);
+		}
+
+		/*微博数据的message对象*/
+		WeiboMultiMessage multmess = new WeiboMultiMessage();
+		TextObject textobj = new TextObject();
+		textobj.text = "异彩你生活！";
+
+		multmess.textObject = textobj;
+		multmess.imageObject = imageobj;
+		/*微博发送的Request请求*/
+		SendMultiMessageToWeiboRequest multRequest = new SendMultiMessageToWeiboRequest();
+		multRequest.multiMessage = multmess;
+		//以当前时间戳为唯一识别符
+		multRequest.transaction = String.valueOf(System.currentTimeMillis());
+		mWeiboShareAPI.sendRequest(multRequest);
+	}
+
+	/**
 	 * 微信分享 （这里仅提供一个分享本地图片的示例，其它请参看官网示例代码）
 	 * 
 	 * @param flag(0:分享到微信好友，1：分享到微信朋友圈)
@@ -196,9 +310,24 @@ public class ResultPreviewActivity extends Activity {
 		Bitmap bmp, WaterMarkbmp;
 
 		ShareBitmap = BitmapStore.getBitmap();
-		WaterMarkbmp = BitmapFactory.decodeResource(getResources(), R.drawable.watermark_small_70);
+		WaterMarkbmp = BitmapFactory.decodeResource(getResources(), R.drawable.watermark_ms);
 		// 加水印
 		bmp = createBitmap(ShareBitmap, WaterMarkbmp);
+		
+		//确保发送给微信图片大小<=32K
+		Log.d("kevin", "before bmp Byte Count = " + bmp.getByteCount() + "Bytes");
+		/*
+		int i = 0;
+		while ((2320*1024) <= bmp.getByteCount())
+		{
+			Log.d("kevin", "图像压缩处理" + i + " 次。");
+			++i;
+			bmp = createBitmapThumbnail(bmp);
+		}*/
+		bmp = createBitmapThumbnail(bmp);
+		//shareCompBitmap = compressImage(bmp);
+		Log.d("kevin", "after bmp Byte Count = " + bmp.getByteCount() + "Bytes");
+
 
 		// 初始化WXImageObject和WXMediaMessage对象
 		WXImageObject imgObj = new WXImageObject(bmp);
@@ -261,7 +390,139 @@ public class ResultPreviewActivity extends Activity {
 
 		// store
 		cv.restore();
+		
 		return newb;
 	}
+
+	
+	// 图像压缩-压缩分辨率法-损失部分细节
+	public Bitmap createBitmapThumbnail(Bitmap bitMap) {  
+	    int width = bitMap.getWidth();  
+	    int height = bitMap.getHeight();  
+	    // 设置想要的大小  
+	    int newWidth = 480;  
+	    int newHeight = 640;  
+	    
+	    Log.d("kevin", "kevin createBitmapThumbnail,  w = " + width + ", h = " + height);
+	    // 计算缩放比例  
+	    float scaleWidth = ((float) newWidth) / width;  
+	    float scaleHeight = ((float) newHeight) / height;  
+	    float scaleRatio = scaleWidth > scaleHeight ? scaleHeight : scaleWidth;
+	    // 取得想要缩放的matrix参数  
+	    Matrix matrix = new Matrix();  
+	    matrix.postScale(scaleRatio, scaleRatio);  
+	    // 得到新的图片  
+	    Bitmap newBitMap = Bitmap.createBitmap(bitMap, 0, 0, width, height,  
+	            matrix, true);  
+	    return newBitMap;  
+	}
+	
+    /**
+     * 微博认证授权回调类。
+     * 1. SSO 授权时，需要在 {@link #onActivityResult} 中调用 {@link SsoHandler#authorizeCallBack} 后，
+     *    该回调才会被执行。
+     * 2. 非 SSO 授权时，当授权结束后，该回调就会被执行。
+     * 当授权成功后，请保存该 access_token、expires_in、uid 等信息到 SharedPreferences 中。
+     */
+    class AuthListener implements WeiboAuthListener {
+
+        @Override
+        public void onComplete(Bundle values) {
+            // 从 Bundle 中解析 Token
+            mAccessToken = Oauth2AccessToken.parseAccessToken(values);
+            if (mAccessToken.isSessionValid()) {
+                // 显示 Token
+                updateTokenView(false);
+
+                // 保存 Token 到 SharedPreferences
+                AccessTokenKeeper.writeAccessToken(ResultPreviewActivity.this, mAccessToken);
+                Toast.makeText(ResultPreviewActivity.this,
+                        R.string.weibosdk_demo_toast_auth_success, Toast.LENGTH_SHORT).show();
+            } else {
+                // 当您注册的应用程序签名不正确时，就会收到 Code，请确保签名正确
+                String code = values.getString("code");
+                String message = getString(R.string.weibosdk_demo_toast_auth_failed);
+                if (!TextUtils.isEmpty(code)) {
+                    message = message + "\nObtained the code: " + code;
+                }
+                Toast.makeText(ResultPreviewActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        }
+
+        @Override
+        public void onCancel() {
+            Toast.makeText(ResultPreviewActivity.this,
+                    R.string.weibosdk_demo_toast_auth_canceled, Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        public void onWeiboException(WeiboException e) {
+            Toast.makeText(ResultPreviewActivity.this,
+                    "Auth exception : " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (mSsoHandler != null) {
+			mSsoHandler.authorizeCallBack(requestCode, resultCode, data);
+		}
+	}
+
+    /**
+     * @see {@link Activity#onNewIntent}
+     */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        // 从当前应用唤起微博并进行分享后，返回到当前应用时，需要在此处调用该函数
+        // 来接收微博客户端返回的数据；执行成功，返回 true，并调用
+        // {@link IWeiboHandler.Response#onResponse}；失败返回 false，不调用上述回调
+        //mWeiboShareAPI.handleWeiboResponse(intent, ResultPreviewActivity.this);
+    }
+    
+    /**
+     * 接收微客户端博请求的数据。
+     * 当微博客户端唤起当前应用并进行分享时，该方法被调用。
+     *
+     * @param baseRequest 微博请求数据对象
+     * @see {@link IWeiboShareAPI#handleWeiboRequest}
+     */
+    public void onResponse(BaseResponse baseResp) {
+        switch (baseResp.errCode) {
+        case WBConstants.ErrorCode.ERR_OK:
+            Toast.makeText(this, R.string.weibosdk_demo_toast_share_success, Toast.LENGTH_LONG).show();
+            break;
+        case WBConstants.ErrorCode.ERR_CANCEL:
+            Toast.makeText(this, R.string.weibosdk_demo_toast_share_canceled, Toast.LENGTH_LONG).show();
+            break;
+        case WBConstants.ErrorCode.ERR_FAIL:
+            Toast.makeText(this,
+                    getString(R.string.weibosdk_demo_toast_share_failed) + "Error Message: " + baseResp.errMsg,
+                    Toast.LENGTH_LONG).show();
+            break;
+        }
+    }
+
+
+    /**
+     * 显示当前 Token 信息。
+     *
+     * @param hasExisted 配置文件中是否已存在 token 信息并且合法
+     */
+    private void updateTokenView(boolean hasExisted) {
+        String date = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(
+                new java.util.Date(mAccessToken.getExpiresTime()));
+        String format = getString(R.string.weibosdk_demo_token_to_string_format_1);
+        mTokenText.setText(String.format(format, mAccessToken.getToken(), date));
+
+        String message = String.format(format, mAccessToken.getToken(), date);
+        if (hasExisted) {
+            message = getString(R.string.weibosdk_demo_token_has_existed) + "\n" + message;
+        }
+        mTokenText.setText(message);
+    }
 
 }

@@ -46,13 +46,16 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
         + resp.errStr);
         switch (resp.errCode) {  
         case BaseResp.ErrCode.ERR_OK:  
-            //分享成功  
+            //分享成功
+        	Log.d("kevin wx", "share succeed.");
             break;  
         case BaseResp.ErrCode.ERR_USER_CANCEL:  
-            //分享取消  
+            //分享取消
+        	Log.d("kevin wx", "share user cancel.");
             break;  
         case BaseResp.ErrCode.ERR_AUTH_DENIED:  
-            //分享拒绝  
+            //分享拒绝
+        	Log.d("kevin wx", "share auth denied.");
             break;  
         }  
     }  
