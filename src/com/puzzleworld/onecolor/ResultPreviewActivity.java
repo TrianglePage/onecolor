@@ -65,6 +65,7 @@ import android.media.MediaScannerConnection;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 
 /*
  * 处理后图片确认界面
@@ -76,6 +77,7 @@ public class ResultPreviewActivity extends Activity {
 	private ImageButton btnShare;
 	private Bitmap previewBitmap;
 	private Bitmap ShareBitmap;
+	private Bitmap shareCompBitmap;
 	private Context mContext;
 	private IWXAPI wxApi;
 	private final int THUMB_SIZE = 200;
@@ -305,9 +307,24 @@ public class ResultPreviewActivity extends Activity {
 		Bitmap bmp, WaterMarkbmp;
 
 		ShareBitmap = BitmapStore.getBitmap();
-		WaterMarkbmp = BitmapFactory.decodeResource(getResources(), R.drawable.watermark_small_70);
+		WaterMarkbmp = BitmapFactory.decodeResource(getResources(), R.drawable.watermark_ms);
 		// 加水印
 		bmp = createBitmap(ShareBitmap, WaterMarkbmp);
+		
+		//确保发送给微信图片大小<=32K
+		Log.d("kevin", "before bmp Byte Count = " + bmp.getByteCount() + "Bytes");
+		/*
+		int i = 0;
+		while ((2320*1024) <= bmp.getByteCount())
+		{
+			Log.d("kevin", "图像压缩处理" + i + " 次。");
+			++i;
+			bmp = createBitmapThumbnail(bmp);
+		}*/
+		bmp = createBitmapThumbnail(bmp);
+		//shareCompBitmap = compressImage(bmp);
+		Log.d("kevin", "after bmp Byte Count = " + bmp.getByteCount() + "Bytes");
+
 
 		// 初始化WXImageObject和WXMediaMessage对象
 		WXImageObject imgObj = new WXImageObject(bmp);
@@ -370,9 +387,33 @@ public class ResultPreviewActivity extends Activity {
 
 		// store
 		cv.restore();
+		
 		return newb;
 	}
 
+	
+	// 图像压缩-压缩分辨率法-损失部分细节
+	public Bitmap createBitmapThumbnail(Bitmap bitMap) {  
+	    int width = bitMap.getWidth();  
+	    int height = bitMap.getHeight();  
+	    // 设置想要的大小  
+	    int newWidth = 480;  
+	    int newHeight = 480;  
+	    
+	    Log.d("kevin", "kevin createBitmapThumbnail,  w = " + width + ", h = " + height);
+	    // 计算缩放比例  
+	    float scaleWidth = ((float) newWidth) / width;  
+	    float scaleHeight = ((float) newHeight) / height;  
+	    float scaleRatio = scaleWidth > scaleHeight ? scaleHeight : scaleWidth;
+	    // 取得想要缩放的matrix参数  
+	    Matrix matrix = new Matrix();  
+	    matrix.postScale(scaleRatio, scaleRatio);  
+	    // 得到新的图片  
+	    Bitmap newBitMap = Bitmap.createBitmap(bitMap, 0, 0, width, height,  
+	            matrix, true);  
+	    return newBitMap;  
+	}
+	
     /**
      * 微博认证授权回调类。
      * 1. SSO 授权时，需要在 {@link #onActivityResult} 中调用 {@link SsoHandler#authorizeCallBack} 后，
