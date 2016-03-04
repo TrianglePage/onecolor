@@ -23,9 +23,9 @@ import android.view.ViewGroup;
 import android.view.Window;
 
 /*
- * logo欢迎首页
+ * 作品展示页面
  */
-//TODO:如何只在第一次安装显示
+
 public class PicShowActivity extends Activity {
 	private static final String TAG = "test";
 	private ViewPager viewpager = null;
@@ -91,7 +91,7 @@ public class PicShowActivity extends Activity {
 							@Override
 							public void onClick(View v) {
 								final Intent intent = new Intent();
-								intent.setClass(PicShowActivity.this, PickpicActivity.class);
+								intent.setClass(PicShowActivity.this, ProcessActivity.class);
 								intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 								PicShowActivity.this.startActivity(intent);
 								finish();

@@ -63,7 +63,7 @@
         <com.puzzleworld.onecolor.ScaleImageView
             android:id="@+id/ivProcess"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginLeft="40dp"
             android:layout_marginRight="40dp"
             android:layout_marginTop="5dp"
@@ -90,7 +90,7 @@
                 android:layout_height="wrap_content"
 	            android:paddingLeft="10dp"
 	            android:paddingTop="5dp"
-	            android:text="Level[0~4]" />            
+	            android:text="Level[0~255]" />            
         </FrameLayout>
          
         <SeekBar

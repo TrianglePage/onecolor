@@ -17,6 +17,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -34,14 +36,7 @@ import android.widget.TextView;
 
 public class ProcessActivity extends Activity {
 
-	// static {
-	// System.loadLibrary("img_processor");
-	// }
-	//
-	// public native int[] ImgFun(int[] buf, int w, int h, int touchX, int
-	// touchY, int value);
-
-	private ImageView ivProcess;
+	private ScaleImageView ivProcess;
 	private ImageButton btnRestore;
 	private ImageButton btnConfirm;
 	private ImageButton btnPickanother;
@@ -49,15 +44,15 @@ public class ProcessActivity extends Activity {
 	private SeekBar seekBar;
 	private TextView textView;
 	private TextView textView1;
-	private RatingBar ratingBar;
-	private int value2jni;
 	private int align;
-	private float touchX = 0;
-	private float touchY = 0;
+	private boolean picSelected = false;
+	private Thread myThread;
+	private int seekbarLevel = 0;
+	private Handler mHandler;
 
 	final float PIC_MAX_WIDTH = 1920;
 	final float PIC_MAX_HEIGHT = 1080;
-	final int seekbarLevel = 4;
+	final int seekbarMaxLevel = 255;
 
 	private enum textView_e
 	{
@@ -67,12 +62,13 @@ public class ProcessActivity extends Activity {
 		TV_CONFIRM,
 		TV_MAX_NUM
 	};
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_process);
 
+		picSelected = false;
 		ivProcess = (ScaleImageView) findViewById(R.id.ivProcess);
 		btnRestore = (ImageButton) findViewById(R.id.btnRestore);
 		btnConfirm = (ImageButton) findViewById(R.id.btnConfirm);
@@ -80,51 +76,19 @@ public class ProcessActivity extends Activity {
 		textView = (TextView) findViewById(R.id.textView);
 		textView1 = (TextView) findViewById(R.id.textView1);
 
-		//textView 点击更新
+		// textView 点击更新
 		textView.getPaint().setFakeBoldText(true);
 		textView.setTextColor(Color.rgb(255, 255, 255));
 		textView_e tv_0 = textView_e.TV_SELECT_PIC;
 		fresh_textView(tv_0);
-		
-		// 从前一界面获取到选择的图片地址，显示到ImageView中
-		Intent intent = getIntent();
-		if (intent != null) {
-			//textView 点击更新
-			textView_e tv_1 = textView_e.TV_CHANGE_LEVEL;
-			fresh_textView(tv_1);
-			align = 2 << (seekbarLevel + 1);
-			ContentResolver cr = this.getContentResolver();
-			Uri uri = intent.getParcelableExtra("uri");
-			try {
-				Bitmap bm = BitmapFactory.decodeStream(cr.openInputStream(uri));
-				showBitmap = scaleAndAlignBitmap(bm, align);
-				BitmapStore.setBitmap(showBitmap);
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 
-		ivProcess.setOnTouchListener(new OnTouchListener() {
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				//textView 点击更新
-				textView_e tv_3 = textView_e.TV_CONFIRM;
-				fresh_textView(tv_3);
+		Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.choosepic);
 
-				// 当按下时获取到屏幕中的xy位置
-				if (event.getAction() == MotionEvent.ACTION_DOWN) {
-					touchX = event.getX();
-					touchY = event.getY();
-					Log.e("chz", "touch info: " + event.getX() + "," + event.getY());
-				}
-				return false;
-			}
-		});
+		BitmapStore.setBitmap(image);
 
 		// 滑动条
 		seekBar = (SeekBar) findViewById(R.id.seekBar1);
-		seekBar.setMax(seekbarLevel);
+		seekBar.setMax(seekbarMaxLevel);
 
 		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onStopTrackingTouch(SeekBar seekBar) {
@@ -139,22 +103,27 @@ public class ProcessActivity extends Activity {
 				System.out.println("kevin progress changed-->" + progress);
 				textView1.getPaint().setFakeBoldText(true);
 				textView1.setTextColor(Color.rgb(255, 255, 255));
-				//textView 点击更新
+				// textView 点击更新
 				textView_e tv_2 = textView_e.TV_TOUCH_POINT;
 				fresh_textView(tv_2);
 
-				textView1.setText(	String.format("Level[0~4] %d", progress));
-				value2jni = progress;
+				textView1.setText(String.format("Level[0~255] %d", progress));
+				seekbarLevel = progress;
 			}
 		});
 
-		// 调用native opencv处理图像
+		// 判断是否已经选好图片执行不同操作
 		ivProcess.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				int w = showBitmap.getWidth(), h = showBitmap.getHeight();
-				opencv_process(w, h);
+				textView_e tv_3 = textView_e.TV_CONFIRM;
+				fresh_textView(tv_3);
+				if (picSelected) {
+					// 已经选择了图片，处理图片在ScaleImageView中的监听函数中。
+				} else {
+					pick_another_picture();
+				}
 			}
 		});
 
@@ -163,7 +132,7 @@ public class ProcessActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				//textView 点击更新
+				// textView 点击更新
 				textView_e tv_1 = textView_e.TV_CHANGE_LEVEL;
 				fresh_textView(tv_1);
 
@@ -188,92 +157,107 @@ public class ProcessActivity extends Activity {
 		btnPickanother.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				//textView 点击更新
-				textView_e tv_1 = textView_e.TV_CHANGE_LEVEL;
-				fresh_textView(tv_1);
-
-				// TODO Auto-generated method stub
-				Intent intent = new Intent();
-				/* 开启Pictures画面Type设定为image */
-				intent.setType("image/*");
-				/* 使用Intent.ACTION_GET_CONTENT这个Action */
-				intent.setAction(Intent.ACTION_GET_CONTENT);
-				/* 取得相片后返回本画面 */
-				startActivityForResult(intent, 1);
+				pick_another_picture();
 			}
 		});
+
+		mHandler = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				if (msg.what == 1) {
+					//Log.i("chz", "process----------------");
+					ivProcess.setLevel(seekbarLevel);
+					ivProcess.processPicture();
+				}
+				super.handleMessage(msg);
+			}
+		};
+
+		myThread = new Thread(new Runnable() {
+			public void run() {
+				while (true) {
+					int level = seekbarLevel;
+					try {
+						Thread.sleep(400);
+						if (level != seekbarLevel) {
+							Message msg = mHandler.obtainMessage();
+							msg.what = 1;
+							msg.sendToTarget();
+							level = seekbarLevel;
+						}
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+
+			}
+		});
+		myThread.start();
 	}
 
-	private void opencv_process(int w, int h)
-	{
-		// ivProcess.setDrawingCacheEnabled(true);
-		// Bitmap img1 =
-		// Bitmap.createBitmap(ivProcess.getDrawingCache());
-		// ivProcess.setDrawingCacheEnabled(false);
-		//int w = showBitmap.getWidth(), h = showBitmap.getHeight();
-		int[] pix = new int[w * h];
-		showBitmap.getPixels(pix, 0, w, 0, 0, w, h);
-		Log.i("chz ProcessActivity", "img w=" + ivProcess.getWidth() + ", h=" + ivProcess.getHeight() + ", bitmap w="
-				+ showBitmap.getWidth() + ",h=" + showBitmap.getHeight());
-		// touchX和touchY是相对imageView控件的，而内部的bitmap宽高与imageView是不同的
-		// 这里换算成相对图片的坐标tx，ty
-		int tx = (int) (touchX / ivProcess.getWidth() * showBitmap.getWidth());
-		int ty = (int) (touchY / ivProcess.getHeight() * showBitmap.getHeight());
-		Log.i("chz ProcessActivity", "img x="+ivProcess.getX()+",y="+ivProcess.getY()+",touchX="+touchX+",touchY="+touchY+",tx="+tx+",ty="+ty);
-		// int[] resultInt = ImgFun(pix, w, h, tx, ty, value2jni);
-		// Bitmap resultImg = Bitmap.createBitmap(w, h,
-		// Config.ARGB_8888);
-		// resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
-		// ivProcess.setImageBitmap(resultImg);	
-	}
-	
-	private void fresh_textView(textView_e tv_type)
-	{
-		Log.d("kevin", "fresh textView type : " + tv_type);
+	private void pick_another_picture() {
+		// textView 点击更新
+		textView_e tv_1 = textView_e.TV_CHANGE_LEVEL;
+		fresh_textView(tv_1);
 
+		// TODO Auto-generated method stub
+		Intent intent = new Intent();
+		/* 开启Pictures画面Type设定为image */
+		intent.setType("image/*");
+		/* 使用Intent.ACTION_GET_CONTENT这个Action */
+		intent.setAction(Intent.ACTION_GET_CONTENT);
+		/* 取得相片后返回本画面 */
+		startActivityForResult(intent, 1);
+	}
+
+	private void fresh_textView(textView_e tv_type) {
 		textView.getPaint().setFakeBoldText(true);
 		textView.setTextColor(Color.rgb(255, 255, 255));
-		
-		switch (tv_type)
-		{
+
+		switch (tv_type) {
 		case TV_CONFIRM:
-			textView.setText(	String.format("请点击确认按钮"));
+			textView.setText(String.format("请点击确认按钮"));
 			break;
 		case TV_TOUCH_POINT:
-			textView.setText(	String.format("请点击需要突出显示的区域"));
+			textView.setText(String.format("请点击需要突出显示的区域"));
 			break;
 		case TV_CHANGE_LEVEL:
-			textView.setText(	String.format("请选择处理强度级别"));
+			textView.setText(String.format("请选择处理强度级别"));
 			break;
 		case TV_SELECT_PIC:
 		default:
-			textView.setText(	String.format("请选择一张图片"));
+			textView.setText(String.format("请选择一张图片"));
 			break;
 		}
 	}
+
 	protected void onResume() {
 		super.onResume();
 
 	};
 
+	// 在这里设置imageview的图片，因为这时候imageview的大小才能获取到，oncreat的时候获取不到。
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
 		Bitmap currentBitmap = BitmapStore.getBitmap();
-		ivProcess.setImageBitmap(currentBitmap);
+		ivProcess.setImageBitmapEx(currentBitmap, picSelected);
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		Log.e("md", "caocaocao");
 		super.onActivityResult(requestCode, resultCode, data);
 		if (resultCode == RESULT_OK) {
 			Uri uri = data.getData();
-			Log.i("uri", uri.toString());
+			// Log.i("uri", uri.toString());
 			ContentResolver cr = this.getContentResolver();
 			try {
 				Bitmap bm = BitmapFactory.decodeStream(cr.openInputStream(uri));
+				align = 2 << (seekbarLevel + 1);
 				showBitmap = scaleAndAlignBitmap(bm, align);
 				BitmapStore.setBitmap(showBitmap);
+				picSelected = true;
+				// Log.i("PickpicActivity", "pick up picture ok!");
 				// ivProcess.setImageBitmap(showBitmap);
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -302,13 +286,12 @@ public class ProcessActivity extends Activity {
 			Log.wtf("chz", "w=" + bgimage.getWidth() + ",h=" + bgimage.getHeight() + ",ratio=" + scaleRatio);
 			scaledBitmap = Bitmap.createBitmap(bgimage, 0, 0, bgimage.getWidth(), bgimage.getHeight(), matrix, true);
 		}
-		//scaledBitmap = compressImage(bgimage);
 
 		// 对齐
 		alignedWidth = (scaledBitmap.getWidth() / align) * align;
 		alignedHeight = (scaledBitmap.getHeight() / align) * align;
 
-		Log.wtf("chz", "w=" + alignedWidth + ",h=" + alignedHeight);
+		// Log.wtf("chz", "w=" + alignedWidth + ",h=" + alignedHeight);
 		return Bitmap.createBitmap(scaledBitmap, 0, 0, alignedWidth, alignedHeight, null, true);
 	}
 
@@ -316,27 +299,29 @@ public class ProcessActivity extends Activity {
 	private Bitmap compressImage(Bitmap image) {
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		image.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
+		image.compress(Bitmap.CompressFormat.JPEG, 100, baos);// 质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
 		int options = 100;
 		int i = 0;
-		
-		Log.d("kevin", "before compressImage Byte Count = " + baos.toByteArray().length + "Bytes");
-		while ( baos.toByteArray().length / 1024 > 31) {	//循环判断如果压缩后图片是否大于31kb,大于继续压缩
-			Log.d("kevin", "图像质量压缩处理" + i + " 次。");
+
+		// Log.d("kevin", "before compressImage Byte Count = " +
+		// baos.toByteArray().length + "Bytes");
+		while (baos.toByteArray().length / 1024 > 31) { // 循环判断如果压缩后图片是否大于31kb,大于继续压缩
+			// Log.d("kevin", "图像质量压缩处理" + i + " 次。");
 			++i;
-			baos.reset();//重置baos即清空baos
-			image.compress(Bitmap.CompressFormat.JPEG, options, baos);//这里压缩options%，把压缩后的数据存放到baos中
-			options -= 10;//每次都减少10
+			baos.reset();// 重置baos即清空baos
+			image.compress(Bitmap.CompressFormat.JPEG, options, baos);// 这里压缩options%，把压缩后的数据存放到baos中
+			options -= 10;// 每次都减少10
 		}
-		Log.d("kevin", "after compressImage Byte Count = " + baos.toByteArray().length + "Bytes");
-		
-		ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());//把压缩后的数据baos存放到ByteArrayInputStream中
-		Bitmap bitmap = BitmapFactory.decodeStream(isBm, null, null);//把ByteArrayInputStream数据生成图片
-		Log.d("kevin", "after compressImage bitmap Byte Count = " + bitmap.getByteCount() + "Bytes");
+		// Log.d("kevin", "after compressImage Byte Count = " +
+		// baos.toByteArray().length + "Bytes");
+
+		ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());// 把压缩后的数据baos存放到ByteArrayInputStream中
+		Bitmap bitmap = BitmapFactory.decodeStream(isBm, null, null);// 把ByteArrayInputStream数据生成图片
+		// Log.d("kevin", "after compressImage bitmap Byte Count = " +
+		// bitmap.getByteCount() + "Bytes");
 		return bitmap;
 	}
 
-	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();

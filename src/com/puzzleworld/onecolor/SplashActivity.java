@@ -37,13 +37,13 @@ public class SplashActivity extends Activity {
 		String mResultStr = context.getSharedPreferences(SHAREDPREFERENCES_NAME, Context.MODE_WORLD_READABLE)
 				.getString(KEY_GUIDE_ACTIVITY, "");// 取得所有类名 如com.my.MainActivity
 
-		if (mResultStr.equalsIgnoreCase("version_1_0"))//判断是否已写入版本字符串，存在则不是第一次进入
+		if (mResultStr.equalsIgnoreCase("version_1_1"))//判断是否已写入版本字符串，存在则不是第一次进入
 			return false;
 		else {
 
 			SharedPreferences settings = getSharedPreferences(SHAREDPREFERENCES_NAME, 0);
 			SharedPreferences.Editor editor = settings.edit();
-			editor.putString(KEY_GUIDE_ACTIVITY, "version_1_0");//第一次进入，写入版本号，以后升级修改此版本号
+			editor.putString(KEY_GUIDE_ACTIVITY, "version_1_1");//第一次进入，写入版本号，以后升级修改此版本号
 			editor.commit();
 			return true;
 		}
@@ -59,7 +59,7 @@ public class SplashActivity extends Activity {
 			switch (msg.what) {
 			case SWITCH_MAINACTIVITY:
 				Intent mIntent = new Intent();
-				mIntent.setClass(SplashActivity.this, PickpicActivity.class);
+				mIntent.setClass(SplashActivity.this, ProcessActivity.class);
 				SplashActivity.this.startActivity(mIntent);
 				SplashActivity.this.finish();
 				break;

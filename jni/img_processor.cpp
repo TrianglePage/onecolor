@@ -29,7 +29,7 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
 	if (cbuf == NULL) {
 		return 0;
 	}
-	LOGD("kevin jni value = %d w=%d h=%d touchX = %d touchY= %d", level, w, h, touchX, touchY);
+	//LOGD("kevin jni value = %d w=%d h=%d touchX = %d touchY= %d", level, w, h, touchX, touchY);
 
 	Mat imgData(h, w, CV_8UC4, (unsigned char*) cbuf);
 	int flags = 4 + (255 << 8) + (CV_FLOODFILL_FIXED_RANGE);
@@ -79,9 +79,9 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
 
 	cvSplit(hsv, h_plane, s, v, 0);
 
-	cvSet2D(maskImage,100,100,cvScalar(255));//传入坐标设在这里，这两个100,100
+	cvSet2D(maskImage,touchY,touchX,cvScalar(255));//传入坐标设在这里，这两个100,100
 
-	Grow(s,maskImage,10);//传入的level设在这里，
+	Grow(s,maskImage,level);//传入的level设在这里，
 
 	cvFindContours(maskImage, storage, &contours, sizeof(CvContour),
 			CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE); //CV_RETR_CCOMP,

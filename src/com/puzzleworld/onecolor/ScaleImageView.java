@@ -25,6 +25,10 @@ public class ScaleImageView extends ImageView {
 	private Matrix matrix = new Matrix();
 	private Matrix savedMatrix = new Matrix();
 	private boolean processed = false;
+	private boolean misForProcessPic = false;
+	private float mTouchX = 0;
+	private float mTouchY = 0;
+	private int mLevel = 1;
 
 	static final int NONE = 0;
 	static final int DRAG = 1;
@@ -36,28 +40,52 @@ public class ScaleImageView extends ImageView {
 	PointF mid = new PointF();
 	float oldDist = 1f;
 
-	public void setImageBitmap(Bitmap bm) {
+	/*
+	 * isForProcessPic表示设置的图片是否用于处理，第一次显示的是添加图片，不用于处理
+	 * 注意不能再oncreate函数中调用，因为函数内部获取控件宽高会变成0
+	 */
+	public void setImageBitmapEx(Bitmap bm, boolean isForProcessPic) {
+		misForProcessPic = isForProcessPic;
+
+		float scaleX;
+		float scaleY;
+		float scale;
+
 		super.setImageBitmap(bm);
-		setImageMatrix(matrix);
-		if (!processed) {
-			// 不是处理后的图片，是重新选择的，在此做缩放处理以适合控件
-			matrix.reset();
-			float[] values = new float[9];
-			matrix.getValues(values);
-			float offsetX = values[2];
-			float offsetY = values[5];
-			float scaleX = (float) this.getWidth() / (float) bm.getWidth();
-			float scaleY = (float) this.getHeight() / (float) bm.getHeight();
-			float scale = scaleX < scaleY ? scaleX : scaleY;
+		// setImageMatrix(matrix);
+		matrix.reset();
+		float[] values = new float[9];
+		matrix.getValues(values);
+		float offsetX = values[2];
+		float offsetY = values[5];
 
-			matrix.postTranslate(-offsetX, -offsetY);
-			// Log.i("chz", "init scale = "+scale+",w = " + this.getWidth() +",h
-			// = " +this.getHeight()+ ",bw =
-			// "+bm.getWidth()+",bh="+bm.getHeight());
-			matrix.postScale(scale, scale, 0, 0);
-
-			setImageMatrix(matrix);
+		if (isForProcessPic) {
+			if (!processed) {
+				// 不是处理后的图片，是重新选择的，在此做缩放处理以适合控件
+				scaleX = (float) this.getWidth() / (float) bm.getWidth();
+				scaleY = (float) this.getHeight() / (float) bm.getHeight();
+				// scale = scaleX < scaleY ? scaleX : scaleY;
+				if (scaleX < scaleY) {
+					scale = scaleX;
+					offsetY = (this.getHeight() - bm.getHeight() * scale) / 2;
+				} else {
+					scale = scaleY;
+					offsetX = (this.getWidth() - bm.getWidth() * scale) / 2;
+				}
+				matrix.postTranslate(offsetX, offsetY);
+//				Log.i("chz", "init scale = " + scale + ",w = " + this.getWidth() + ",h = " + this.getHeight() + ",bw ="
+//						+ bm.getWidth() + ",bh=" + bm.getHeight() + "offX=" + offsetX + "offy=" + offsetY);
+				matrix.postScale(scale, scale, 0, 0);
+			}
+		} else {
+//			Log.i("chz", "w = " + this.getWidth() + ",h = " + this.getHeight() + ",bw =" + bm.getWidth() + ",bh="
+//					+ bm.getHeight());
+			offsetX = (this.getWidth() - bm.getWidth()) / 2;
+			offsetY = (this.getHeight() - bm.getHeight()) / 2;
+			matrix.postTranslate(offsetX, offsetY);
 		}
+
+		setImageMatrix(matrix);
 	}
 
 	public ScaleImageView(Context context) {
@@ -84,10 +112,15 @@ public class ScaleImageView extends ImageView {
 		point.set(x / 2, y / 2);
 	}
 
+	// public boolean onTouchEvent(MotionEvent event) {
+	// performClick();//显式调用这个函数，才会调到注册的onClick函数。
+	// return true;
+	// }
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		if (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP)
-			Log.d("Infor", "多点操作");
+//		Log.i("chz", "eventid=" + event.getActionMasked() + ",actionDown=" + MotionEvent.ACTION_DOWN);
+//		if (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP)
+//			Log.d("Infor", "多点操作");
 		switch (event.getActionMasked()) {
 		case MotionEvent.ACTION_DOWN:
 			matrix.set(getImageMatrix());
@@ -99,7 +132,7 @@ public class ScaleImageView extends ImageView {
 		case MotionEvent.ACTION_POINTER_DOWN: // 多点触控
 			oldDist = this.spacing(event);
 			if (oldDist > 10f) {
-				Log.d("Infor", "oldDist" + oldDist);
+//				Log.d("Infor", "oldDist" + oldDist);
 				savedMatrix.set(matrix);
 				midPoint(mid, event);
 				mode = ZOOM;
@@ -122,49 +155,57 @@ public class ScaleImageView extends ImageView {
 			}
 			break;
 		case MotionEvent.ACTION_UP:// 这里计算坐标，目前还有问题
+//			Log.i("chz",
+//					"startx=" + start.x + "eventx=" + event.getX() + "starty=" + start.y + "eventy=" + event.getY());
 			if (start.x == event.getX() && start.y == event.getY()) {
 				float[] values = new float[9];
+				// 图片可能被缩放和移动，获取图片移动偏移和缩放比例
 				matrix.getValues(values);
 				float offsetX = values[2];
 				float offsetY = values[5];
 				float scaleX = values[0];
 				float scaleY = values[4];
 
+				// 计算点击坐标相对原始图片的实际坐标
 				float actualX = (event.getX() - offsetX) / scaleX;
 				float actualY = (event.getY() - offsetY) / scaleY;
-				Log.i("chz", "actualX = " + actualX + ",actualY = " + actualY);
-
-				Log.i("chz",
-						"offx = " + offsetX + ",offy = " + offsetY + ",scaleX = " + scaleX + ",scaleY = " + scaleY);
-				// ivProcess.setDrawingCacheEnabled(true);
-				// Bitmap img1 =
-				// Bitmap.createBitmap(ivProcess.getDrawingCache());
-				// ivProcess.setDrawingCacheEnabled(false);
-				Bitmap showBitmap = ((BitmapDrawable) this.getDrawable()).getBitmap();
-				int w = showBitmap.getWidth(), h = showBitmap.getHeight();
-				int[] pix = new int[w * h];
-				showBitmap.getPixels(pix, 0, w, 0, 0, w, h);
-				Log.i("chz", "img w=" + this.getWidth() + ", h=" + this.getHeight() + ", bitmap w="
-						+ showBitmap.getWidth() + ",h=" + showBitmap.getHeight());
-				// touchX和touchY是相对imageView控件的，而内部的bitmap宽高与imageView是不同的
-				// 这里换算成相对图片的坐标tx，ty
-				// int tx = (int)
-				// (start.x/this.getWidth()*showBitmap.getWidth());
-				// int ty = (int)
-				// (start.y/this.getHeight()*showBitmap.getHeight());
-				// Log.i("chz", "img
-				// x="+this.getX()+",y="+this.getY()+",touchX="+start.x+",touchY="+start.y+",tx="+tx+",ty="+ty);
-				if (actualX > 0 && actualY > 0 && actualX < w && actualY < h) {
-					int[] resultInt = ImgFun(pix, w, h, (int) actualX, (int) actualY, 1);// TODO
-					Bitmap resultImg = Bitmap.createBitmap(w, h, Config.ARGB_8888);
-					resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
-					processed = true;
-					this.setImageBitmap(resultImg);
-					processed = false;
-				}
+					mTouchX = actualX;
+					mTouchY = actualY;
+					processPicture();
 			}
 		}
 		setImageMatrix(matrix);
-		return true;
+		if (misForProcessPic) {
+			return true;
+		} else {
+			performClick();// 显式调用这个函数，才会调到注册的onClick函数。
+			return false;
+		}
+	}
+
+	public void setLevel(int level) {
+		if (level > 0 && level < 256) {
+			mLevel = level;
+		}
+	}
+
+	public void processPicture() {
+		//Bitmap showBitmap = ((BitmapDrawable) this.getDrawable()).getBitmap();
+		Bitmap showBitmap = BitmapStore.getBitmap();
+		int w = showBitmap.getWidth(), h = showBitmap.getHeight();
+		// 获取bitmap像素颜色值存入pix数组，后面传入算法
+		int[] pix = new int[w * h];
+		showBitmap.getPixels(pix, 0, w, 0, 0, w, h);
+		Log.i("chz", "img w=" + this.getWidth() + ", h=" + this.getHeight() + ", bitmap w=" + showBitmap.getWidth()
+				+ ",h=" + showBitmap.getHeight());
+
+		if ((int) mTouchX > 0 && (int) mTouchY > 0 && (int) mTouchX < w && (int) mTouchY < h) {
+			int[] resultInt = ImgFun(pix, w, h, (int) mTouchX, (int) mTouchY, mLevel);// TODO
+			Bitmap resultImg = Bitmap.createBitmap(w, h, Config.ARGB_8888);
+			resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
+			processed = true;
+			this.setImageBitmap(resultImg);
+			processed = false;
+		}
 	}
 }
