@@ -81,18 +81,21 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
 
 	cvSet2D(maskImage,touchY,touchX,cvScalar(255));//传入坐标设在这里，这两个100,100
 
-	Grow(s,maskImage,level);//传入的level设在这里，
+	Grow(h_plane,maskImage,level);//传入的level设在这里，
 
 	cvFindContours(maskImage, storage, &contours, sizeof(CvContour),
 			CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE); //CV_RETR_CCOMP,
 	cvZero(maskImage);
-
+	cvDrawContours(maskImage, contours, cvScalar(255), cvScalar(255), 0,
+			CV_FILLED, 8);
+	/*
 	for (int i = 0; contours != 0; contours = contours->h_next) {
 		cvDrawContours(maskImage, contours, cvScalar(255), cvScalar(255), 0,
 				CV_FILLED, 8);
 	}
-	cvDilate(maskImage,maskImage,NULL,1);
-	cvErode(maskImage,maskImage,NULL,1);
+	*/
+	//cvDilate(maskImage,maskImage,NULL,1);
+	//cvErode(maskImage,maskImage,NULL,1);
 	cvCopy(src, show, maskImage);
 
 	cvThreshold(maskImage, mask_inv, 1, 128, CV_THRESH_BINARY_INV);
