@@ -339,30 +339,30 @@ public class ProcessActivity extends Activity {
 		switch (ItemId) {
 		case R.id.action_about:
 			builder.setTitle("关于");
-			builder.setMessage("声明：\n本应用特别牛逼，请谨慎使用！");
-			builder.setPositiveButton("还是确定", new DialogInterface.OnClickListener() {
+			builder.setMessage("声明：\nCopyright © 2016 TrianglePage.\n All Rights Reserved.\n三角页工作室 版权所有");
+			builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int whichButton) {
 					// setTitle("你懂了");
 				}
 			});
-			builder.setNeutralButton("确定", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-					// setTitle("你真懂了");
-				}
-			});
+//			builder.setNeutralButton("确定", new DialogInterface.OnClickListener() {
+//				public void onClick(DialogInterface dialog, int whichButton) {
+//					// setTitle("你真懂了");
+//				}
+//			});
 			builder.show();
 			break;
 		case R.id.action_update:
 			builder.setTitle("更新");
-			builder.setMessage("更新文件大小100G，继续下载？？？");
-			builder.setPositiveButton("继续", new DialogInterface.OnClickListener() {
+			builder.setMessage("目前已是最新版本");
+			builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int whichButton) {
 				}
 			});
-			builder.setNeutralButton("下载", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-				}
-			});
+//			builder.setNeutralButton("下载", new DialogInterface.OnClickListener() {
+//				public void onClick(DialogInterface dialog, int whichButton) {
+//				}
+//			});
 			builder.show();
 			break;
 		default:
