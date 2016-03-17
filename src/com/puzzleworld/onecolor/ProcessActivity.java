@@ -52,7 +52,7 @@ public class ProcessActivity extends Activity {
 
 	final float PIC_MAX_WIDTH = 1920;
 	final float PIC_MAX_HEIGHT = 1080;
-	final int seekbarMaxLevel = 255;
+	final int seekbarMaxLevel = 100;
 
 	private enum textView_e
 	{
@@ -220,7 +220,7 @@ public class ProcessActivity extends Activity {
 			textView.setText(String.format("请点击确认按钮"));
 			break;
 		case TV_TOUCH_POINT:
-			textView.setText(String.format("请点击需要突出显示的区域"));
+			textView.setText(String.format("请点击需要突出显示的区域可以双手放大、缩小操作区域"));
 			break;
 		case TV_CHANGE_LEVEL:
 			textView.setText(String.format("请选择处理强度级别"));

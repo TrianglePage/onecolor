@@ -397,8 +397,8 @@ public class ResultPreviewActivity extends Activity {
 	    int width = bitMap.getWidth();  
 	    int height = bitMap.getHeight();  
 	    // 设置想要的大小  
-	    int newWidth = 480;  
-	    int newHeight = 480;  
+	    int newWidth = 360;//480;  
+	    int newHeight = 360;//480;  
 	    
 	    Log.d("kevin", "kevin createBitmapThumbnail,  w = " + width + ", h = " + height);
 	    // 计算缩放比例  
@@ -429,7 +429,7 @@ public class ResultPreviewActivity extends Activity {
             mAccessToken = Oauth2AccessToken.parseAccessToken(values);
             if (mAccessToken.isSessionValid()) {
                 // 显示 Token
-                updateTokenView(false);
+                //updateTokenView(false);//delete 2016-03-18 by kevin for fixed weibo share crash issue. 
 
                 // 保存 Token 到 SharedPreferences
                 AccessTokenKeeper.writeAccessToken(ResultPreviewActivity.this, mAccessToken);
