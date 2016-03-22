@@ -40,7 +40,7 @@ public class ProcessActivity extends Activity {
 	private ImageButton btnRestore;
 	private ImageButton btnConfirm;
 	private ImageButton btnPickanother;
-	private Bitmap showBitmap;
+	private Bitmap showBitmap = null;
 	private SeekBar seekBar;
 	private TextView textView;
 	private TextView textView1;
@@ -49,6 +49,7 @@ public class ProcessActivity extends Activity {
 	private Thread myThread;
 	private int seekbarLevel = 0;
 	private Handler mHandler;
+	private boolean selectedNew = true;
 
 	final float PIC_MAX_WIDTH = 1920;
 	final float PIC_MAX_HEIGHT = 1080;
@@ -84,7 +85,7 @@ public class ProcessActivity extends Activity {
 
 		Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.choosepic);
 
-		BitmapStore.setBitmap(image);
+		BitmapStore.setBitmapOriginal(image);
 
 		// 滑动条
 		seekBar = (SeekBar) findViewById(R.id.seekBar1);
@@ -107,7 +108,7 @@ public class ProcessActivity extends Activity {
 				textView_e tv_2 = textView_e.TV_TOUCH_POINT;
 				fresh_textView(tv_2);
 
-				textView1.setText(String.format("Level[0~255] %d", progress));
+				textView1.setText(String.format("Level[0~100] %d", progress));
 				seekbarLevel = progress;
 			}
 		});
@@ -148,9 +149,9 @@ public class ProcessActivity extends Activity {
 
 				intent_preview.setClass(ProcessActivity.this, ResultPreviewActivity.class);
 				Bitmap image = ((BitmapDrawable) ivProcess.getDrawable()).getBitmap();
-				BitmapStore.setBitmap(image);
-				ProcessActivity.this.startActivity(intent_preview);
-
+				BitmapStore.setBitmapProcessed(image);
+				//ProcessActivity.this.startActivity(intent_preview);
+				startActivityForResult(intent_preview, 1);
 			}
 		});
 
@@ -234,14 +235,17 @@ public class ProcessActivity extends Activity {
 
 	protected void onResume() {
 		super.onResume();
-
 	};
 
 	// 在这里设置imageview的图片，因为这时候imageview的大小才能获取到，oncreat的时候获取不到。
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
-		Bitmap currentBitmap = BitmapStore.getBitmap();
-		ivProcess.setImageBitmapEx(currentBitmap, picSelected);
+		if(selectedNew)
+		{
+			Bitmap currentBitmap = BitmapStore.getBitmapOriginal();
+			ivProcess.setImageBitmapEx(currentBitmap, picSelected);
+			selectedNew = false;
+		}
 	}
 
 	@Override
@@ -255,8 +259,9 @@ public class ProcessActivity extends Activity {
 				Bitmap bm = BitmapFactory.decodeStream(cr.openInputStream(uri));
 				align = 2 << (seekbarLevel + 1);
 				showBitmap = scaleAndAlignBitmap(bm, align);
-				BitmapStore.setBitmap(showBitmap);
+				BitmapStore.setBitmapOriginal(showBitmap);
 				picSelected = true;
+				selectedNew = true;
 				// Log.i("PickpicActivity", "pick up picture ok!");
 				// ivProcess.setImageBitmap(showBitmap);
 			} catch (FileNotFoundException e) {

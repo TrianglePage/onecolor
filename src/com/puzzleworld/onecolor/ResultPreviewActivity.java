@@ -123,7 +123,7 @@ public class ResultPreviewActivity extends Activity {
 		btnSave = (ImageButton) findViewById(R.id.btnSave);
 		btnShare = (ImageButton) findViewById(R.id.btnShare);
 
-		previewBitmap = BitmapStore.getBitmap();
+		previewBitmap = BitmapStore.getBitmapProcessed();
 		ivPreview.setImageBitmap(previewBitmap);
 		mContext = this;
 
@@ -240,7 +240,7 @@ public class ResultPreviewActivity extends Activity {
 
 					// TODO发微博
 					Bitmap bmp, WaterMarkbmp;
-					ShareBitmap = BitmapStore.getBitmap();
+					ShareBitmap = BitmapStore.getBitmapProcessed();
 					WaterMarkbmp = BitmapFactory.decodeResource(getResources(), R.drawable.watermark_small_70);
 					// 加水印
 					bmp = createBitmap(ShareBitmap, WaterMarkbmp);
@@ -306,7 +306,7 @@ public class ResultPreviewActivity extends Activity {
 	private void wechatShare(int flag) {
 		Bitmap bmp, WaterMarkbmp;
 
-		ShareBitmap = BitmapStore.getBitmap();
+		ShareBitmap = BitmapStore.getBitmapProcessed();
 		WaterMarkbmp = BitmapFactory.decodeResource(getResources(), R.drawable.watermark_ms);
 		// 加水印
 		bmp = createBitmap(ShareBitmap, WaterMarkbmp);

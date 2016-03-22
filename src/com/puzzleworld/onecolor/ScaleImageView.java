@@ -191,7 +191,7 @@ public class ScaleImageView extends ImageView {
 
 	public void processPicture() {
 		//Bitmap showBitmap = ((BitmapDrawable) this.getDrawable()).getBitmap();
-		Bitmap showBitmap = BitmapStore.getBitmap();
+		Bitmap showBitmap = BitmapStore.getBitmapOriginal();
 		int w = showBitmap.getWidth(), h = showBitmap.getHeight();
 		// 获取bitmap像素颜色值存入pix数组，后面传入算法
 		int[] pix = new int[w * h];
