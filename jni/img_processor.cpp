@@ -18,6 +18,14 @@ using namespace std;
 extern "C" {
 
 Mat RegionGrow(Mat src, CvPoint pt, int th);
+typedef enum
+{
+	RED =0,
+	BLUE=1,
+	GREEN=2,
+	PURPLE=3,
+	YELLOW =4,
+};
 void Grow(IplImage* src,IplImage* seed, int t1);
 JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
 		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int touchX, int touchY, int level, int bgColor, int bgBlur);
@@ -102,6 +110,14 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
 
 	cvCopy(gray, gray_mask, mask_inv);
 
+	bgBlur = 1;
+	if(bgBlur == 1)
+	{
+		cvSmooth(gray_mask,gray_mask,CV_BLUR,17,17,0,0);
+	}
+
+
+
 	Mat mat_r(r, 0);
 	Mat mat_g(g, 0);
 	Mat mat_b(b, 0);
@@ -112,7 +128,11 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
 	mat_g = mat_gray_inv + g;
 	mat_b = mat_gray_inv + b;
 
+	cvAddS(r,cvScalar(30),r,mask_inv);
     cvMerge(r,g,b,0,show);
+
+
+
 
 	uchar* ptr = imgData.ptr(0);
 
