@@ -20,10 +20,10 @@ extern "C" {
 Mat RegionGrow(Mat src, CvPoint pt, int th);
 void Grow(IplImage* src,IplImage* seed, int t1);
 JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
-		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int touchX, int touchY, int level);
+		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int touchX, int touchY, int level, int bgColor, int bgBlur);
 
 JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
-		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int touchX, int touchY, int level) {
+		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int touchX, int touchY, int level, int bgColor, int bgBlur) {
 	jint *cbuf;
 	cbuf = env->GetIntArrayElements(buf, NULL);
 	if (cbuf == NULL) {

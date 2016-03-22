@@ -20,7 +20,7 @@ public class ScaleImageView extends ImageView {
 		System.loadLibrary("img_processor");
 	}
 
-	public native int[] ImgFun(int[] buf, int w, int h, int touchX, int touchY, int value);
+	public native int[] ImgFun(int[] buf, int w, int h, int touchX, int touchY, int value, int bgColor, int bgBlur);
 
 	private Matrix matrix = new Matrix();
 	private Matrix savedMatrix = new Matrix();
@@ -200,7 +200,7 @@ public class ScaleImageView extends ImageView {
 				+ ",h=" + showBitmap.getHeight());
 
 		if ((int) mTouchX > 0 && (int) mTouchY > 0 && (int) mTouchX < w && (int) mTouchY < h) {
-			int[] resultInt = ImgFun(pix, w, h, (int) mTouchX, (int) mTouchY, mLevel);// TODO
+			int[] resultInt = ImgFun(pix, w, h, (int) mTouchX, (int) mTouchY, mLevel, 0, 0);// TODO
 			Bitmap resultImg = Bitmap.createBitmap(w, h, Config.ARGB_8888);
 			resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
 			processed = true;
