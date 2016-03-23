@@ -113,7 +113,7 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
 	bgBlur = 1;
 	if(bgBlur == 1)
 	{
-		cvSmooth(gray_mask,gray_mask,CV_BLUR,17,17,0,0);
+		cvSmooth(gray_mask,gray_mask,CV_BLUR,11,11,0,0);
 	}
 
 
@@ -128,7 +128,7 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
 	mat_g = mat_gray_inv + g;
 	mat_b = mat_gray_inv + b;
 
-	cvAddS(r,cvScalar(30),r,mask_inv);
+	cvAddS(r,cvScalar(25),r);
     cvMerge(r,g,b,0,show);
 
 
