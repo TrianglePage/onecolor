@@ -147,7 +147,7 @@ public class ProcessActivity extends Activity {
 			public void onClick(View v) {
 				final Intent intent_preview = new Intent();
 
-				intent_preview.setClass(ProcessActivity.this, ResultPreviewActivity.class);
+				intent_preview.setClass(ProcessActivity.this, MoodPreviewActivity.class);
 				Bitmap image = ((BitmapDrawable) ivProcess.getDrawable()).getBitmap();
 				BitmapStore.setBitmapProcessed(image);
 				//ProcessActivity.this.startActivity(intent_preview);
