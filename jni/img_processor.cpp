@@ -28,13 +28,18 @@ typedef enum
 };
 void Grow(IplImage* src,IplImage* seed, int t1);
 JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
-		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int touchX, int touchY, int level, int bgColor, int bgBlur);
+		JNIEnv* env, jobject obj, jintArray buf, int w, int h, jintArray touchPoints, int touchPointsCount, int level, int bgColor, int bgBlur);
 
 JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
-		JNIEnv* env, jobject obj, jintArray buf, int w, int h, int touchX, int touchY, int level, int bgColor, int bgBlur) {
+		JNIEnv* env, jobject obj, jintArray buf, int w, int h, jintArray touchPoints, int touchPointsCount, int level, int bgColor, int bgBlur) {
 	jint *cbuf;
 	cbuf = env->GetIntArrayElements(buf, NULL);
 	if (cbuf == NULL) {
+		return 0;
+	}
+
+	jint *touchPts = env->GetIntArrayElements(touchPoints, NULL);
+	if (touchPts == NULL) {
 		return 0;
 	}
 	//LOGD("kevin jni value = %d w=%d h=%d touchX = %d touchY= %d", level, w, h, touchX, touchY);
@@ -87,7 +92,7 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
 
 	cvSplit(hsv, h_plane, s, v, 0);
 
-	cvSet2D(maskImage,touchY,touchX,cvScalar(255));//传入坐标设在这里，这两个100,100
+	cvSet2D(maskImage,touchPts[1],touchPts[0],cvScalar(255));//传入坐标设在这里，这两个100,100
 
 	Grow(h_plane,maskImage,level);//传入的level设在这里，
 
@@ -130,9 +135,6 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
 
 	cvAddS(r,cvScalar(25),r);
     cvMerge(r,g,b,0,show);
-
-
-
 
 	uchar* ptr = imgData.ptr(0);
 
