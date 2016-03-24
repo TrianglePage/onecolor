@@ -53,12 +53,12 @@
              android:layout_height="wrap_content" 
              android:layout_weight="0.9">
 
-          <ImageView
+        <!--   <ImageView
 	            android:id="@+id/ivImgView1"
 	            android:layout_width="match_parent"
 	            android:layout_height="wrap_content"
 	            android:scaleType="fitCenter"
-	            android:src="@drawable/img_view" />
+	            android:src="@drawable/img_view" /> -->
              
         <com.puzzleworld.onecolor.ScaleImageView
             android:id="@+id/ivProcess"
