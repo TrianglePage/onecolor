@@ -39,6 +39,7 @@ import com.tencent.mm.sdk.openapi.WXMediaMessage;
 import com.tencent.mm.sdk.platformtools.Util;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -63,7 +64,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaScannerConnection;
-
+import android.net.Uri;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -107,8 +108,10 @@ public class MoodPreviewActivity extends Activity {
 				final Intent intent_preview = new Intent();
 
 				intent_preview.setClass(MoodPreviewActivity.this, ResultPreviewActivity.class);
-				MoodPreviewActivity.this.startActivity(intent_preview);
-				//startActivityForResult(intent_preview, 1);
+				Bitmap image = ((BitmapDrawable) ivPreview.getBackground().getCurrent()).getBitmap();
+				BitmapStore.setBitmapProcessed(image);
+				//MoodPreviewActivity.this.startActivity(intent_preview);
+				startActivityForResult(intent_preview, 1);
 
 			}
 		});
@@ -138,5 +141,24 @@ public class MoodPreviewActivity extends Activity {
         return (Drawable) new BitmapDrawable(getResources(), imgTemp);  
   
     }
+    
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (resultCode == RESULT_OK) {
+			Uri uri = data.getData();
+			// Log.i("uri", uri.toString());
+			ContentResolver cr = this.getContentResolver();
+			try {
+				Bitmap bm = BitmapFactory.decodeStream(cr.openInputStream(uri));
+				BitmapStore.setBitmapOriginal(previewBitmap);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			Log.e("MoodActivity", "pick up picture failed!");
+		}
+	}
 
 }

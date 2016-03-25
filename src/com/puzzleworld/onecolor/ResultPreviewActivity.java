@@ -397,8 +397,8 @@ public class ResultPreviewActivity extends Activity {
 	    int width = bitMap.getWidth();  
 	    int height = bitMap.getHeight();  
 	    // 设置想要的大小  
-	    int newWidth = 360;//480;  
-	    int newHeight = 360;//480;  
+	    int newWidth = 480;  
+	    int newHeight = 480;  
 	    
 	    Log.d("kevin", "kevin createBitmapThumbnail,  w = " + width + ", h = " + height);
 	    // 计算缩放比例  
