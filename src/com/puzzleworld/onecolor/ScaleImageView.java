@@ -20,7 +20,8 @@ public class ScaleImageView extends ImageView {
 		System.loadLibrary("img_processor");
 	}
 
-	public native int[] ImgFun(int[] buf, int w, int h, int touchX, int touchY, int value, int bgColor, int bgBlur);
+	public native int[] ImgFun(int[] buf, int w, int h, int[] touchPoints, int touchPointsCount, int value, int bgColor,
+			int bgBlur);
 
 	private Matrix matrix = new Matrix();
 	private Matrix savedMatrix = new Matrix();
@@ -29,6 +30,8 @@ public class ScaleImageView extends ImageView {
 	private float mTouchX = 0;
 	private float mTouchY = 0;
 	private int mLevel = 1;
+	private int[] touchPoints = new int[20];// 保存点击座标，顺序为x1，y1，x2，y2.。。
+	private int touchPointsCount = 0;
 
 	static final int NONE = 0;
 	static final int DRAG = 1;
@@ -73,13 +76,18 @@ public class ScaleImageView extends ImageView {
 					offsetX = (this.getWidth() - bm.getWidth() * scale) / 2;
 				}
 				matrix.postTranslate(offsetX, offsetY);
-//				Log.i("chz", "init scale = " + scale + ",w = " + this.getWidth() + ",h = " + this.getHeight() + ",bw ="
-//						+ bm.getWidth() + ",bh=" + bm.getHeight() + "offX=" + offsetX + "offy=" + offsetY);
+				// Log.i("chz", "init scale = " + scale + ",w = " +
+				// this.getWidth() + ",h = " + this.getHeight() + ",bw ="
+				// + bm.getWidth() + ",bh=" + bm.getHeight() + "offX=" + offsetX
+				// + "offy=" + offsetY);
 				matrix.postScale(scale, scale, 0, 0);
+
+				touchPointsCount = 0;
 			}
 		} else {
-//			Log.i("chz", "w = " + this.getWidth() + ",h = " + this.getHeight() + ",bw =" + bm.getWidth() + ",bh="
-//					+ bm.getHeight());
+			// Log.i("chz", "w = " + this.getWidth() + ",h = " +
+			// this.getHeight() + ",bw =" + bm.getWidth() + ",bh="
+			// + bm.getHeight());
 			offsetX = (this.getWidth() - bm.getWidth()) / 2;
 			offsetY = (this.getHeight() - bm.getHeight()) / 2;
 			matrix.postTranslate(offsetX, offsetY);
@@ -118,9 +126,10 @@ public class ScaleImageView extends ImageView {
 	// }
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-//		Log.i("chz", "eventid=" + event.getActionMasked() + ",actionDown=" + MotionEvent.ACTION_DOWN);
-//		if (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP)
-//			Log.d("Infor", "多点操作");
+		// Log.i("chz", "eventid=" + event.getActionMasked() + ",actionDown=" +
+		// MotionEvent.ACTION_DOWN);
+		// if (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP)
+		// Log.d("Infor", "多点操作");
 		switch (event.getActionMasked()) {
 		case MotionEvent.ACTION_DOWN:
 			matrix.set(getImageMatrix());
@@ -132,7 +141,7 @@ public class ScaleImageView extends ImageView {
 		case MotionEvent.ACTION_POINTER_DOWN: // 多点触控
 			oldDist = this.spacing(event);
 			if (oldDist > 10f) {
-//				Log.d("Infor", "oldDist" + oldDist);
+				// Log.d("Infor", "oldDist" + oldDist);
 				savedMatrix.set(matrix);
 				midPoint(mid, event);
 				mode = ZOOM;
@@ -155,9 +164,13 @@ public class ScaleImageView extends ImageView {
 			}
 			break;
 		case MotionEvent.ACTION_UP:// 这里计算坐标，目前还有问题
-//			Log.i("chz",
-//					"startx=" + start.x + "eventx=" + event.getX() + "starty=" + start.y + "eventy=" + event.getY());
+			// Log.i("chz",
+			// "startx=" + start.x + "eventx=" + event.getX() + "starty=" +
+			// start.y + "eventy=" + event.getY());
 			if (start.x == event.getX() && start.y == event.getY()) {
+				if (touchPointsCount >= 20) {
+					break;
+				}
 				float[] values = new float[9];
 				// 图片可能被缩放和移动，获取图片移动偏移和缩放比例
 				matrix.getValues(values);
@@ -169,9 +182,15 @@ public class ScaleImageView extends ImageView {
 				// 计算点击坐标相对原始图片的实际坐标
 				float actualX = (event.getX() - offsetX) / scaleX;
 				float actualY = (event.getY() - offsetY) / scaleY;
-					mTouchX = actualX;
-					mTouchY = actualY;
+
+				Bitmap showBitmap = BitmapStore.getBitmapOriginal();
+				int w = showBitmap.getWidth(), h = showBitmap.getHeight();
+
+				if ((int) actualX > 0 && (int) actualY > 0 && (int) actualX < w && (int) actualY < h) {
+					touchPoints[touchPointsCount++] = (int) actualX;
+					touchPoints[touchPointsCount++] = (int) actualY;
 					processPicture();
+				}
 			}
 		}
 		setImageMatrix(matrix);
@@ -189,18 +208,28 @@ public class ScaleImageView extends ImageView {
 		}
 	}
 
-	public void processPicture() {
-		//Bitmap showBitmap = ((BitmapDrawable) this.getDrawable()).getBitmap();
-		Bitmap showBitmap = BitmapStore.getBitmapOriginal();
-		int w = showBitmap.getWidth(), h = showBitmap.getHeight();
-		// 获取bitmap像素颜色值存入pix数组，后面传入算法
-		int[] pix = new int[w * h];
-		showBitmap.getPixels(pix, 0, w, 0, 0, w, h);
-		Log.i("chz", "img w=" + this.getWidth() + ", h=" + this.getHeight() + ", bitmap w=" + showBitmap.getWidth()
-				+ ",h=" + showBitmap.getHeight());
+	public void undo() {
+		if (touchPointsCount >= 2) {
+			touchPointsCount -= 2;
+			processPicture();
+		}
+	}
 
-		if ((int) mTouchX > 0 && (int) mTouchY > 0 && (int) mTouchX < w && (int) mTouchY < h) {
-			int[] resultInt = ImgFun(pix, w, h, (int) mTouchX, (int) mTouchY, mLevel, 0, 0);// TODO
+	public void processPicture() {
+		if (touchPointsCount == 0) {
+			this.setImageBitmap(BitmapStore.getBitmapOriginal());
+		} else if (touchPointsCount > 0) {
+			Bitmap showBitmap = BitmapStore.getBitmapOriginal();
+			int w = showBitmap.getWidth(), h = showBitmap.getHeight();
+			// 获取bitmap像素颜色值存入pix数组，后面传入算法
+			int[] pix = new int[w * h];
+			showBitmap.getPixels(pix, 0, w, 0, 0, w, h);
+			// Log.i("chz", "img w=" + this.getWidth() + ", h=" +
+			// this.getHeight() +
+			// ", bitmap w=" + showBitmap.getWidth()
+			// + ",h=" + showBitmap.getHeight());
+
+			int[] resultInt = ImgFun(pix, w, h, touchPoints, touchPointsCount, mLevel, 0, 0);// TODO
 			Bitmap resultImg = Bitmap.createBitmap(w, h, Config.ARGB_8888);
 			resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
 			processed = true;

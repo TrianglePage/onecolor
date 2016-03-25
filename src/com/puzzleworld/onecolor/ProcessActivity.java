@@ -38,6 +38,7 @@ public class ProcessActivity extends Activity {
 
 	private ScaleImageView ivProcess;
 	private ImageButton btnRestore;
+	private ImageButton btnUndo;
 	private ImageButton btnConfirm;
 	private ImageButton btnPickanother;
 	private Bitmap showBitmap = null;
@@ -72,6 +73,7 @@ public class ProcessActivity extends Activity {
 		picSelected = false;
 		ivProcess = (ScaleImageView) findViewById(R.id.ivProcess);
 		btnRestore = (ImageButton) findViewById(R.id.btnRestore);
+		btnUndo = (ImageButton) findViewById(R.id.btnUndo);
 		btnConfirm = (ImageButton) findViewById(R.id.btnConfirm);
 		btnPickanother = (ImageButton) findViewById(R.id.btnPickanother);
 		textView = (TextView) findViewById(R.id.textView);
@@ -137,10 +139,17 @@ public class ProcessActivity extends Activity {
 				textView_e tv_1 = textView_e.TV_CHANGE_LEVEL;
 				fresh_textView(tv_1);
 
-				ivProcess.setImageBitmap(showBitmap);
+				ivProcess.setImageBitmapEx(showBitmap, true);
 			}
 		});
+		
+		btnUndo.setOnClickListener(new OnClickListener() {
 
+			@Override
+			public void onClick(View v) {
+				ivProcess.undo();
+			}
+		});
 		btnConfirm.setOnClickListener(new OnClickListener() {
 
 			@Override
