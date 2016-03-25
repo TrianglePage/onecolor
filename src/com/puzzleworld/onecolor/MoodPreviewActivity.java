@@ -74,7 +74,7 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 
 /*
- * 处理后图片添加心情界面
+ * 处理后图片添加文字心情界面
  */
 public class MoodPreviewActivity extends Activity {
 
@@ -82,28 +82,22 @@ public class MoodPreviewActivity extends Activity {
 	private ImageButton btnConfirm;
 	private Bitmap previewBitmap;
 	private Context mContext;
-	private Bitmap imgTemp;  //临时标记图
+	private Bitmap imgTemp;  //临时图
 	private int width,height;   //图片的高度和宽带
-	private Bitmap imgMarker;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_mood_preview);
 
-
 		ivPreview = (ImageView) findViewById(R.id.ivPreview);
 		btnConfirm = (ImageButton) findViewById(R.id.btnConfirm);
 
-		imgMarker = BitmapFactory.decodeResource(getResources(), R.drawable.meinv);  
-        width = imgMarker.getWidth();  
-        height = imgMarker.getHeight();  
-
-		previewBitmap = BitmapStore.getBitmapProcessed();
-		ivPreview.setImageBitmap(previewBitmap);
-		mContext = this;  		
-
-		ivPreview.setBackground(createDrawable('K'));
+        previewBitmap = BitmapStore.getBitmapProcessed();
+        width = previewBitmap.getWidth();
+        height = previewBitmap.getHeight();
+		ivPreview.setBackgroundDrawable(createDrawable("Kevin's Puzzorld!"));
+		mContext = this;
 		
 		btnConfirm.setOnClickListener(new OnClickListener() {
 
@@ -120,26 +114,25 @@ public class MoodPreviewActivity extends Activity {
 		});
 
 	}
-	
-	// 穿件带字母的标记图片  
-    private Drawable createDrawable(char letter) {  
-        imgTemp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);  
+
+	// 给图片添加文字心情
+    private Drawable createDrawable(String str) {
+        imgTemp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Log.d("kevin", "createDrawable imgTemp width = " + width + ", height = "+ height);
         Canvas canvas = new Canvas(imgTemp);  
+
         Paint paint = new Paint(); // 建立画笔  
         paint.setDither(true);  
         paint.setFilterBitmap(true);  
         Rect src = new Rect(0, 0, width, height);  
         Rect dst = new Rect(0, 0, width, height);  
-        canvas.drawBitmap(imgMarker, src, dst, paint);  
-  
-        Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG  
-                | Paint.DEV_KERN_TEXT_FLAG);  
-        textPaint.setTextSize(20.0f);  
+        canvas.drawBitmap(previewBitmap, src, dst, paint);  // 将 previewBitmap 缩放或扩大到 dst 使用的填充区 paint
+
+        Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG  | Paint.DEV_KERN_TEXT_FLAG);  // 设置画笔
+        textPaint.setTextSize(60.0f); // 字体大小
         textPaint.setTypeface(Typeface.DEFAULT_BOLD); // 采用默认的宽度  
-        textPaint.setColor(Color.WHITE);  
-  
-        canvas.drawText(String.valueOf(letter), width /2-5, height/2+5,  
-                textPaint);  
+        textPaint.setColor(Color.RED);
+        canvas.drawText(str, width/4, height-20,  textPaint); // 绘制上去字，开始未知x,y采用那只笔绘制 
         canvas.save(Canvas.ALL_SAVE_FLAG);  
         canvas.restore();  
         return (Drawable) new BitmapDrawable(getResources(), imgTemp);  
