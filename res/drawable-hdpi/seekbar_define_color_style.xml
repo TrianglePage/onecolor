@@ -3,6 +3,7 @@
    
    <item android:id="@android:id/background"
             android:paddingTop="3px"
+            android:paddingLeft="0px"
          android:paddingBottom="3px">     
       <shape>     
          <corners android:radius="10dip" />     

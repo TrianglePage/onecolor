@@ -42,6 +42,8 @@ public class ProcessActivity extends Activity {
 	private ImageButton btnConfirm;
 	private ImageButton btnPickanother;
 	private Bitmap showBitmap = null;
+	private ImageView ivSubtraction;
+	private ImageView ivAdd;
 	private SeekBar seekBar;
 	private TextView textView;
 	private TextView textView1;
@@ -90,6 +92,8 @@ public class ProcessActivity extends Activity {
 		BitmapStore.setBitmapOriginal(image);
 
 		// 滑动条
+		ivSubtraction = (ImageView)findViewById(R.id.ivSubtraction);
+		ivAdd = (ImageView)findViewById(R.id.ivAdd);
 		seekBar = (SeekBar) findViewById(R.id.seekBar1);
 		seekBar.setMax(seekbarMaxLevel);
 
@@ -110,11 +114,33 @@ public class ProcessActivity extends Activity {
 				textView_e tv_2 = textView_e.TV_TOUCH_POINT;
 				fresh_textView(tv_2);
 
-				textView1.setText(String.format("Level[0~100] %d", progress));
+				textView1.setText(String.format("色彩保留等级: %d", progress));
 				seekbarLevel = progress;
 			}
 		});
+		
+		ivSubtraction.setOnClickListener(new OnClickListener() {
 
+			@Override
+			public void onClick(View v) {
+				if(seekbarLevel > 0)
+				{
+					seekBar.setProgress(--seekbarLevel);
+				}
+			}
+		});
+		
+		ivAdd.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if(seekbarLevel < seekbarMaxLevel)
+				{
+					seekBar.setProgress(++seekbarLevel);
+				}
+			}
+		});
+		
 		// 判断是否已经选好图片执行不同操作
 		ivProcess.setOnClickListener(new OnClickListener() {
 
