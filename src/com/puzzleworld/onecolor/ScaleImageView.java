@@ -75,13 +75,13 @@ public class ScaleImageView extends ImageView {
 					scale = scaleY;
 					offsetX = (this.getWidth() - bm.getWidth() * scale) / 2;
 				}
-				matrix.postTranslate(offsetX, offsetY);
-				// Log.i("chz", "init scale = " + scale + ",w = " +
-				// this.getWidth() + ",h = " + this.getHeight() + ",bw ="
-				// + bm.getWidth() + ",bh=" + bm.getHeight() + "offX=" + offsetX
-				// + "offy=" + offsetY);
-				matrix.postScale(scale, scale, 0, 0);
 
+//				 Log.i("chz", "init scale = " + scale + ",w = " +
+//				 this.getWidth() + ",h = " + this.getHeight() + ",bw ="
+//				 + bm.getWidth() + ",bh=" + bm.getHeight() + "offX=" + offsetX
+//				 + "offy=" + offsetY);
+				matrix.postScale(scale, scale, 0, 0);
+				matrix.postTranslate(offsetX, offsetY);
 				touchPointsCount = 0;
 			}
 		} else {
