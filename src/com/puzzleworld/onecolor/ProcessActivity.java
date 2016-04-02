@@ -27,12 +27,16 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.ShapeDrawable;
 
 public class ProcessActivity extends Activity {
 
@@ -45,27 +49,98 @@ public class ProcessActivity extends Activity {
 	private ImageView ivSubtraction;
 	private ImageView ivAdd;
 	private SeekBar seekBar;
-	private TextView textView;
-	private TextView textView1;
+	// private TextView textView;
+	// private TextView textView1;
 	private int align;
 	private boolean picSelected = false;
 	private Thread myThread;
 	private int seekbarLevel = 0;
 	private Handler mHandler;
 	private boolean selectedNew = true;
+	private CheckBox cbIsBlur;
 
+	private GradientDrawable bgShape;
+	private View currentSelectedColor = null;
+	private backgroundColor_e bgColor;
+	private int isBlur;
 	final float PIC_MAX_WIDTH = 1920;
 	final float PIC_MAX_HEIGHT = 1080;
 	final int seekbarMaxLevel = 100;
 
-	private enum textView_e
-	{
-		TV_SELECT_PIC,
-		TV_CHANGE_LEVEL,
-		TV_TOUCH_POINT,
-		TV_CONFIRM,
-		TV_MAX_NUM
+	private int statusLevel = 0;
+	private int statusBgColor = 0;
+	private int statusIsBlur = 0;
+
+	private enum textView_e {
+		TV_SELECT_PIC, TV_CHANGE_LEVEL, TV_TOUCH_POINT, TV_CONFIRM, TV_MAX_NUM
 	};
+
+	private enum backgroundColor_e {
+		BG_GRAY, BG_GREEN, BG_BLUE, BG_YELLOW, BG_PINK
+	};
+
+	private void switchColorStatus(View tempColor) {
+		if (currentSelectedColor == null) {
+			currentSelectedColor = tempColor;
+			bgShape = (GradientDrawable) currentSelectedColor.getBackground();
+			bgShape.setStroke(3, Color.argb(200, 255, 255, 255));
+			currentSelectedColor.setBackground(bgShape);
+		} else {
+			bgShape = (GradientDrawable) currentSelectedColor.getBackground();
+			bgShape.setStroke(0, Color.argb(255, 255, 0, 0));
+			currentSelectedColor.setBackground(bgShape);
+
+			if (currentSelectedColor == tempColor) {
+				currentSelectedColor = null;
+			} else {
+				bgShape = (GradientDrawable) tempColor.getBackground();
+				bgShape.setStroke(3, Color.argb(200, 255, 255, 255));
+				tempColor.setBackground(bgShape);
+				currentSelectedColor = tempColor;
+			}
+
+		}
+
+		getParameters();
+	}
+
+	private void getParameters() {
+		if (currentSelectedColor != null) {
+			switch (currentSelectedColor.getId()) {
+			case R.id.bgColorGray:
+				bgColor = backgroundColor_e.BG_GRAY;
+				break;
+			case R.id.bgColorGreen:
+				bgColor = backgroundColor_e.BG_GREEN;
+				break;
+			case R.id.bgColorBlue:
+				bgColor = backgroundColor_e.BG_BLUE;
+				break;
+			case R.id.bgColorYellow:
+				bgColor = backgroundColor_e.BG_YELLOW;
+				break;
+			case R.id.bgColorPink:
+				bgColor = backgroundColor_e.BG_PINK;
+				break;
+			default:
+				bgColor = backgroundColor_e.BG_GRAY;
+			}
+		}
+
+		if (cbIsBlur != null) {
+			isBlur = cbIsBlur.isChecked() ? 1 : 0;
+		}
+	}
+
+	private boolean statusChanged() {
+		return (statusLevel != seekbarLevel) || (statusBgColor != bgColor.ordinal()) || (statusIsBlur != isBlur);
+	}
+
+	private void updateStatus() {
+		statusLevel = seekbarLevel;
+		statusBgColor = bgColor.ordinal();
+		statusIsBlur = isBlur;
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -78,22 +153,54 @@ public class ProcessActivity extends Activity {
 		btnUndo = (ImageButton) findViewById(R.id.btnUndo);
 		btnConfirm = (ImageButton) findViewById(R.id.btnConfirm);
 		btnPickanother = (ImageButton) findViewById(R.id.btnPickanother);
-		textView = (TextView) findViewById(R.id.textView);
-		textView1 = (TextView) findViewById(R.id.textView1);
+		cbIsBlur = (CheckBox) findViewById(R.id.cbBlur);
+		bgColor = backgroundColor_e.BG_GRAY;
+		// textView = (TextView) findViewById(R.id.textView);
+		// textView1 = (TextView) findViewById(R.id.textView1);
 
 		// textView 点击更新
-		textView.getPaint().setFakeBoldText(true);
-		textView.setTextColor(Color.rgb(255, 255, 255));
-		textView_e tv_0 = textView_e.TV_SELECT_PIC;
-		fresh_textView(tv_0);
+		// textView.getPaint().setFakeBoldText(true);
+		// textView.setTextColor(Color.rgb(255, 255, 255));
+		// textView_e tv_0 = textView_e.TV_SELECT_PIC;
+		// fresh_textView(tv_0);
+
+		findViewById(R.id.bgColorGray).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				switchColorStatus(v);
+			}
+		});
+
+		findViewById(R.id.bgColorGreen).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				switchColorStatus(v);
+			}
+		});
+
+		findViewById(R.id.bgColorBlue).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				switchColorStatus(v);
+			}
+		});
+
+		findViewById(R.id.bgColorYellow).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				switchColorStatus(v);
+			}
+		});
+
+		findViewById(R.id.bgColorPink).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				switchColorStatus(v);
+			}
+		});
 
 		Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.choosepic);
 
 		BitmapStore.setBitmapOriginal(image);
 
 		// 滑动条
-		ivSubtraction = (ImageView)findViewById(R.id.ivSubtraction);
-		ivAdd = (ImageView)findViewById(R.id.ivAdd);
+		ivSubtraction = (ImageView) findViewById(R.id.ivSubtraction);
+		ivAdd = (ImageView) findViewById(R.id.ivAdd);
 		seekBar = (SeekBar) findViewById(R.id.seekBar1);
 		seekBar.setMax(seekbarMaxLevel);
 
@@ -108,51 +215,57 @@ public class ProcessActivity extends Activity {
 
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				System.out.println("kevin progress changed-->" + progress);
-				textView1.getPaint().setFakeBoldText(true);
-				textView1.setTextColor(Color.rgb(255, 255, 255));
+				// textView1.getPaint().setFakeBoldText(true);
+				// textView1.setTextColor(Color.rgb(255, 255, 255));
 				// textView 点击更新
-				textView_e tv_2 = textView_e.TV_TOUCH_POINT;
-				fresh_textView(tv_2);
+				// textView_e tv_2 = textView_e.TV_TOUCH_POINT;
+				// fresh_textView(tv_2);
 
-				textView1.setText(String.format("色彩保留等级: %d", progress));
+				// textView1.setText(String.format("色彩保留等级: %d", progress));
 				seekbarLevel = progress;
 			}
 		});
-		
+
 		ivSubtraction.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				if(seekbarLevel > 0)
-				{
+				if (seekbarLevel > 0) {
 					seekBar.setProgress(--seekbarLevel);
 				}
 			}
 		});
-		
+
 		ivAdd.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				if(seekbarLevel < seekbarMaxLevel)
-				{
+				if (seekbarLevel < seekbarMaxLevel) {
 					seekBar.setProgress(++seekbarLevel);
 				}
 			}
 		});
-		
+
 		// 判断是否已经选好图片执行不同操作
 		ivProcess.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				textView_e tv_3 = textView_e.TV_CONFIRM;
-				fresh_textView(tv_3);
+				// textView_e tv_3 = textView_e.TV_CONFIRM;
+				// fresh_textView(tv_3);
 				if (picSelected) {
 					// 已经选择了图片，处理图片在ScaleImageView中的监听函数中。
 				} else {
 					pick_another_picture();
 				}
+			}
+		});
+
+		cbIsBlur.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				getParameters();
 			}
 		});
 
@@ -162,13 +275,13 @@ public class ProcessActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				// textView 点击更新
-				textView_e tv_1 = textView_e.TV_CHANGE_LEVEL;
-				fresh_textView(tv_1);
+				// textView_e tv_1 = textView_e.TV_CHANGE_LEVEL;
+				// fresh_textView(tv_1);
 
 				ivProcess.setImageBitmapEx(showBitmap, true);
 			}
 		});
-		
+
 		btnUndo.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -185,7 +298,7 @@ public class ProcessActivity extends Activity {
 				intent_preview.setClass(ProcessActivity.this, MoodPreviewActivity.class);
 				Bitmap image = ((BitmapDrawable) ivProcess.getDrawable()).getBitmap();
 				BitmapStore.setBitmapProcessed(image);
-				//ProcessActivity.this.startActivity(intent_preview);
+				// ProcessActivity.this.startActivity(intent_preview);
 				startActivityForResult(intent_preview, 1);
 			}
 		});
@@ -201,8 +314,9 @@ public class ProcessActivity extends Activity {
 			@Override
 			public void handleMessage(Message msg) {
 				if (msg.what == 1) {
-					//Log.i("chz", "process----------------");
-					ivProcess.setLevel(seekbarLevel);
+					// Log.i("chz", "process----------------");
+					getParameters();
+					ivProcess.setParameters(seekbarLevel, bgColor.ordinal(), isBlur);
 					ivProcess.processPicture();
 				}
 				super.handleMessage(msg);
@@ -212,14 +326,13 @@ public class ProcessActivity extends Activity {
 		myThread = new Thread(new Runnable() {
 			public void run() {
 				while (true) {
-					int level = seekbarLevel;
 					try {
 						Thread.sleep(400);
-						if (level != seekbarLevel) {
+						if (statusChanged()) {
 							Message msg = mHandler.obtainMessage();
 							msg.what = 1;
 							msg.sendToTarget();
-							level = seekbarLevel;
+							updateStatus();
 						}
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
@@ -235,7 +348,7 @@ public class ProcessActivity extends Activity {
 	private void pick_another_picture() {
 		// textView 点击更新
 		textView_e tv_1 = textView_e.TV_CHANGE_LEVEL;
-		fresh_textView(tv_1);
+		// fresh_textView(tv_1);
 
 		// TODO Auto-generated method stub
 		Intent intent = new Intent();
@@ -247,24 +360,34 @@ public class ProcessActivity extends Activity {
 		startActivityForResult(intent, 1);
 	}
 
-	private void fresh_textView(textView_e tv_type) {
-		textView.getPaint().setFakeBoldText(true);
-		textView.setTextColor(Color.rgb(255, 255, 255));
+	// private void fresh_textView(textView_e tv_type) {
+	// textView.getPaint().setFakeBoldText(true);
+	// textView.setTextColor(Color.rgb(255, 255, 255));
+	//
+	// switch (tv_type) {
+	// case TV_CONFIRM:
+	// textView.setText(String.format("请点击确认按钮"));
+	// break;
+	// case TV_TOUCH_POINT:
+	// textView.setText(String.format("请点击需要突出显示的区域可以双手放大、缩小操作区域"));
+	// break;
+	// case TV_CHANGE_LEVEL:
+	// textView.setText(String.format("请选择处理强度级别"));
+	// break;
+	// case TV_SELECT_PIC:
+	// default:
+	// textView.setText(String.format("请选择一张图片"));
+	// break;
+	// }
+	// }
 
-		switch (tv_type) {
-		case TV_CONFIRM:
-			textView.setText(String.format("请点击确认按钮"));
-			break;
-		case TV_TOUCH_POINT:
-			textView.setText(String.format("请点击需要突出显示的区域可以双手放大、缩小操作区域"));
-			break;
-		case TV_CHANGE_LEVEL:
-			textView.setText(String.format("请选择处理强度级别"));
-			break;
-		case TV_SELECT_PIC:
-		default:
-			textView.setText(String.format("请选择一张图片"));
-			break;
+	protected void onDestroy() {
+		super.onDestroy();
+		if (currentSelectedColor != null) {
+			bgShape = (GradientDrawable) currentSelectedColor.getBackground();
+			bgShape.setStroke(0, Color.argb(255, 255, 0, 0));
+			currentSelectedColor.setBackground(bgShape);
+			currentSelectedColor = null;
 		}
 	}
 
@@ -275,8 +398,7 @@ public class ProcessActivity extends Activity {
 	// 在这里设置imageview的图片，因为这时候imageview的大小才能获取到，oncreat的时候获取不到。
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
-		if(selectedNew)
-		{
+		if (selectedNew) {
 			Bitmap currentBitmap = BitmapStore.getBitmapOriginal();
 			ivProcess.setImageBitmapEx(currentBitmap, picSelected);
 			selectedNew = false;
@@ -385,11 +507,12 @@ public class ProcessActivity extends Activity {
 					// setTitle("你懂了");
 				}
 			});
-//			builder.setNeutralButton("确定", new DialogInterface.OnClickListener() {
-//				public void onClick(DialogInterface dialog, int whichButton) {
-//					// setTitle("你真懂了");
-//				}
-//			});
+			// builder.setNeutralButton("确定", new
+			// DialogInterface.OnClickListener() {
+			// public void onClick(DialogInterface dialog, int whichButton) {
+			// // setTitle("你真懂了");
+			// }
+			// });
 			builder.show();
 			break;
 		case R.id.action_update:
@@ -399,10 +522,11 @@ public class ProcessActivity extends Activity {
 				public void onClick(DialogInterface dialog, int whichButton) {
 				}
 			});
-//			builder.setNeutralButton("下载", new DialogInterface.OnClickListener() {
-//				public void onClick(DialogInterface dialog, int whichButton) {
-//				}
-//			});
+			// builder.setNeutralButton("下载", new
+			// DialogInterface.OnClickListener() {
+			// public void onClick(DialogInterface dialog, int whichButton) {
+			// }
+			// });
 			builder.show();
 			break;
 		default:

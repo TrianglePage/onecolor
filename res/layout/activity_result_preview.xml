@@ -36,22 +36,22 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_weight="0.5"
             android:layout_marginBottom="5dp"
-            android:scaleType="fitCenter"
+            android:layout_weight="0.5"
             android:background="#00000000"
-            android:src="@drawable/save" />
+            android:scaleType="fitCenter"
+            android:src="@layout/button_save_style" />
 
         <ImageButton
             android:id="@+id/btnShare"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_weight="0.5"
             android:layout_marginBottom="5dp"
-            android:scaleType="fitCenter"
+            android:layout_weight="0.5"
             android:background="#00000000"
-            android:src="@drawable/sharewithwechat" />
+            android:scaleType="fitCenter"
+            android:src="@layout/button_share_style" />
     </LinearLayout>
 
 </LinearLayout>

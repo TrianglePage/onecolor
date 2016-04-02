@@ -30,6 +30,8 @@ public class ScaleImageView extends ImageView {
 	private float mTouchX = 0;
 	private float mTouchY = 0;
 	private int mLevel = 1;
+	private int mColor = 0;
+	private int mIsBlur = 0;
 	private int[] touchPoints = new int[20];// 保存点击座标，顺序为x1，y1，x2，y2.。。
 	private int touchPointsCount = 0;
 
@@ -76,10 +78,10 @@ public class ScaleImageView extends ImageView {
 					offsetX = (this.getWidth() - bm.getWidth() * scale) / 2;
 				}
 
-//				 Log.i("chz", "init scale = " + scale + ",w = " +
-//				 this.getWidth() + ",h = " + this.getHeight() + ",bw ="
-//				 + bm.getWidth() + ",bh=" + bm.getHeight() + "offX=" + offsetX
-//				 + "offy=" + offsetY);
+				// Log.i("chz", "init scale = " + scale + ",w = " +
+				// this.getWidth() + ",h = " + this.getHeight() + ",bw ="
+				// + bm.getWidth() + ",bh=" + bm.getHeight() + "offX=" + offsetX
+				// + "offy=" + offsetY);
 				matrix.postScale(scale, scale, 0, 0);
 				matrix.postTranslate(offsetX, offsetY);
 				touchPointsCount = 0;
@@ -202,10 +204,10 @@ public class ScaleImageView extends ImageView {
 		}
 	}
 
-	public void setLevel(int level) {
-		if (level > 0 && level < 256) {
-			mLevel = level;
-		}
+	public void setParameters(int level, int Color, int isBlur) {
+		mLevel = level;
+		mColor = Color;
+		mIsBlur = isBlur;
 	}
 
 	public void undo() {
@@ -228,8 +230,7 @@ public class ScaleImageView extends ImageView {
 			// this.getHeight() +
 			// ", bitmap w=" + showBitmap.getWidth()
 			// + ",h=" + showBitmap.getHeight());
-
-			int[] resultInt = ImgFun(pix, w, h, touchPoints, touchPointsCount, mLevel, 0, 0);// TODO
+			int[] resultInt = ImgFun(pix, w, h, touchPoints, touchPointsCount, mLevel, mColor, mIsBlur);
 			Bitmap resultImg = Bitmap.createBitmap(w, h, Config.ARGB_8888);
 			resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
 			processed = true;
