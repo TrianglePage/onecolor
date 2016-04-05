@@ -41,6 +41,26 @@
         android:paddingRight="20dp" >
 
         <ImageButton
+            android:id="@+id/btnColors"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_weight="0.08"
+            android:background="#00000000"
+            android:scaleType="fitCenter"
+            android:src="@drawable/colors" />
+
+        <ImageButton
+            android:id="@+id/btnFonts"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_weight="0.08"
+            android:background="#00000000"
+            android:scaleType="fitCenter"
+            android:src="@drawable/fonts" />
+        
+        <ImageButton
             android:id="@+id/btnConfirm"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"

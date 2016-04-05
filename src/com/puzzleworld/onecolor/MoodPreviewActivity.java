@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
+import com.puzzleworld.onecolor.ResultPreviewActivity.AuthListener;
 import com.puzzleworld.onecolor.wbapi.AccessTokenKeeper;
 import com.sina.weibo.sdk.api.ImageObject;
 import com.sina.weibo.sdk.api.MusicObject;
@@ -89,10 +90,14 @@ public class MoodPreviewActivity extends Activity {
 	private boolean DEBUG = false;
 	private ImageView ivPreview;
 	private ImageButton btnConfirm;
+	private ImageButton btnColors;
+	private ImageButton btnFonts;
 	private Bitmap previewBitmap;
 	private Bitmap imgTemp;  //临时图
 	private int width,height;   //图片的高度和宽带
 	private EditText editText;
+	private int TextColor = Color.WHITE;
+	private Typeface TextTypeFace = Typeface.DEFAULT_BOLD;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +106,8 @@ public class MoodPreviewActivity extends Activity {
 
 		ivPreview = (ImageView) findViewById(R.id.ivPreview);
 		btnConfirm = (ImageButton) findViewById(R.id.btnConfirm);
+		btnColors = (ImageButton) findViewById(R.id.btnColors);
+		btnFonts = (ImageButton) findViewById(R.id.btnFonts);
         editText=(EditText)findViewById(R.id.edit_text);
 
         previewBitmap = BitmapStore.getBitmapProcessed();
@@ -134,7 +141,147 @@ public class MoodPreviewActivity extends Activity {
 			}
 		});
 		
+		btnColors.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Log.i("kevin", "jump to colors select");
+				showColorsPopwindow();
+			}
+		});
+		
+		btnFonts.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Log.i("kevin", "jump to colors select");
+				showFontsPopwindow();
+			}
+		});
         editText.addTextChangedListener(watcher);
+
+	}
+
+	/**
+	 * 显示ColorspopupWindow
+	 */
+	private void showColorsPopwindow() {
+		// 利用layoutInflater获得View
+		LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		View view = inflater.inflate(R.layout.activity_mood_colors, null);
+
+		// 下面是两种方法得到宽度和高度 getWindow().getDecorView().getWidth()
+
+		PopupWindow window = new PopupWindow(view, WindowManager.LayoutParams.MATCH_PARENT,
+				WindowManager.LayoutParams.WRAP_CONTENT);
+
+		// 设置popWindow弹出窗体可点击，这句话必须添加，并且是true
+		window.setFocusable(true);
+
+		// 实例化一个ColorDrawable颜色为半透明
+		ColorDrawable dw = new ColorDrawable(0xb0000000);
+		window.setBackgroundDrawable(dw);
+
+		// 设置popWindow的显示和消失动画
+		window.setAnimationStyle(R.style.mypopwindow_anim_style);
+		// 在底部显示
+		window.showAtLocation(MoodPreviewActivity.this.findViewById(R.id.ivPreview), Gravity.BOTTOM, 0, 0);
+
+		// 这里检验popWindow里的button是否可以点击
+		ImageButton btnColorsRed = (ImageButton) view.findViewById(R.id.btnColorsRed);
+		btnColorsRed.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Log.i("kevin", "U slc Color Red");
+				TextColor = Color.RED;
+			}
+		});
+
+		ImageButton btnColorsYellow = (ImageButton) view.findViewById(R.id.btnColorsYellow);
+		btnColorsYellow.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Log.i("kevin", "pls slc Color Yellow");
+				TextColor = Color.YELLOW;
+			}
+		});
+
+		ImageButton btnColorsBlue = (ImageButton) view.findViewById(R.id.btnColorsBlue);
+		btnColorsBlue.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Log.i("kevin", "pls slc Color Blue");
+				TextColor = Color.BLUE;
+			}
+		});
+		
+		// popWindow消失监听方法
+		window.setOnDismissListener(new OnDismissListener() {
+
+			@Override
+			public void onDismiss() {
+				System.out.println("popWindow消失");
+			}
+		});
+
+	}
+
+	/**
+	 * 显示FontspopupWindow
+	 */
+	private void showFontsPopwindow() {
+		// 利用layoutInflater获得View
+		LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		View view = inflater.inflate(R.layout.activity_mood_fonts, null);
+
+		// 下面是两种方法得到宽度和高度 getWindow().getDecorView().getWidth()
+
+		PopupWindow window = new PopupWindow(view, WindowManager.LayoutParams.MATCH_PARENT,
+				WindowManager.LayoutParams.WRAP_CONTENT);
+
+		// 设置popWindow弹出窗体可点击，这句话必须添加，并且是true
+		window.setFocusable(true);
+
+		// 实例化一个ColorDrawable颜色为半透明
+		ColorDrawable dw = new ColorDrawable(0xb0000000);
+		window.setBackgroundDrawable(dw);
+
+		// 设置popWindow的显示和消失动画
+		window.setAnimationStyle(R.style.mypopwindow_anim_style);
+		// 在底部显示
+		window.showAtLocation(MoodPreviewActivity.this.findViewById(R.id.ivPreview), Gravity.BOTTOM, 0, 0);
+
+		// 这里检验popWindow里的button是否可以点击
+		ImageButton btnFontsSS = (ImageButton) view.findViewById(R.id.btnFontsSansSerif);
+		btnFontsSS.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Log.i("kevin", "U slc Font SANS_SERIF");
+				TextTypeFace = Typeface.SANS_SERIF;
+			}
+		});
+
+		ImageButton btnFontsSERIF = (ImageButton) view.findViewById(R.id.btnFontsSerif);
+		btnFontsSERIF.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Log.i("kevin", "pls slc Font SERIF");
+			}
+		});
+
+		// popWindow消失监听方法
+		window.setOnDismissListener(new OnDismissListener() {
+
+			@Override
+			public void onDismiss() {
+				System.out.println("Fonts popWindow消失");
+			}
+		});
 
 	}
 	
@@ -194,8 +341,8 @@ public class MoodPreviewActivity extends Activity {
 
         Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG  | Paint.DEV_KERN_TEXT_FLAG);  // 设置画笔
         textPaint.setTextSize(60.0f); // 字体大小
-        textPaint.setTypeface(Typeface.DEFAULT_BOLD); // 采用默认的宽度  
-        textPaint.setColor(Color.RED);
+        textPaint.setTypeface(TextTypeFace); // 采用默认的宽度  
+        textPaint.setColor(TextColor);
         canvas.drawText(str, width/4, height*3/4,  textPaint); // 绘制上去字，开始未知x,y采用那只笔绘制 
         canvas.save(Canvas.ALL_SAVE_FLAG);  
         canvas.restore();  

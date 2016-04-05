@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    android:orientation="horizontal">"
+
+    <!-- 这里的linearLayout加android:background=""这个属性要谨慎，如果加了后，popwindow是不能半透明了的 -->
+
+    <ImageButton
+        android:id="@+id/btnColorsRed"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:layout_weight="1"
+        android:background="#00000000"
+        android:scaleType="fitCenter"
+        android:src="@drawable/red" />
+
+    <ImageButton
+        android:id="@+id/btnColorsYellow"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:layout_weight="1"
+        android:background="#00000000"
+        android:scaleType="fitCenter"
+        android:src="@drawable/yellow" />
+
+    <ImageButton
+        android:id="@+id/btnColorsBlue"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:layout_weight="1"
+        android:background="#00000000"
+        android:scaleType="fitCenter"
+        android:src="@drawable/blue" />
+
+</LinearLayout>
