@@ -78,69 +78,69 @@ public class ProcessActivity extends Activity {
 	private enum backgroundColor_e {
 		BG_GRAY, BG_GREEN, BG_BLUE, BG_YELLOW, BG_PINK
 	};
-
-	private void switchColorStatus(View tempColor) {
-		if (currentSelectedColor == null) {
-			currentSelectedColor = tempColor;
-			bgShape = (GradientDrawable) currentSelectedColor.getBackground();
-			bgShape.setStroke(3, Color.argb(200, 255, 255, 255));
-			currentSelectedColor.setBackground(bgShape);
-		} else {
-			bgShape = (GradientDrawable) currentSelectedColor.getBackground();
-			bgShape.setStroke(0, Color.argb(255, 255, 0, 0));
-			currentSelectedColor.setBackground(bgShape);
-
-			if (currentSelectedColor == tempColor) {
-				currentSelectedColor = null;
-			} else {
-				bgShape = (GradientDrawable) tempColor.getBackground();
-				bgShape.setStroke(3, Color.argb(200, 255, 255, 255));
-				tempColor.setBackground(bgShape);
-				currentSelectedColor = tempColor;
-			}
-
-		}
-
-		getParameters();
-	}
+//
+//	private void switchColorStatus(View tempColor) {
+//		if (currentSelectedColor == null) {
+//			currentSelectedColor = tempColor;
+//			bgShape = (GradientDrawable) currentSelectedColor.getBackground();
+//			bgShape.setStroke(3, Color.argb(200, 255, 255, 255));
+//			currentSelectedColor.setBackground(bgShape);
+//		} else {
+//			bgShape = (GradientDrawable) currentSelectedColor.getBackground();
+//			bgShape.setStroke(0, Color.argb(255, 255, 0, 0));
+//			currentSelectedColor.setBackground(bgShape);
+//
+//			if (currentSelectedColor == tempColor) {
+//				currentSelectedColor = null;
+//			} else {
+//				bgShape = (GradientDrawable) tempColor.getBackground();
+//				bgShape.setStroke(3, Color.argb(200, 255, 255, 255));
+//				tempColor.setBackground(bgShape);
+//				currentSelectedColor = tempColor;
+//			}
+//
+//		}
+//
+//		getParameters();
+//	}
 
 	private void getParameters() {
-		if (currentSelectedColor != null) {
-			switch (currentSelectedColor.getId()) {
-			case R.id.bgColorGray:
-				bgColor = backgroundColor_e.BG_GRAY;
-				break;
-			case R.id.bgColorGreen:
-				bgColor = backgroundColor_e.BG_GREEN;
-				break;
-			case R.id.bgColorBlue:
-				bgColor = backgroundColor_e.BG_BLUE;
-				break;
-			case R.id.bgColorYellow:
-				bgColor = backgroundColor_e.BG_YELLOW;
-				break;
-			case R.id.bgColorPink:
-				bgColor = backgroundColor_e.BG_PINK;
-				break;
-			default:
-				bgColor = backgroundColor_e.BG_GRAY;
-			}
-		}
+//		if (currentSelectedColor != null) {
+//			switch (currentSelectedColor.getId()) {
+//			case R.id.bgColorGray:
+//				bgColor = backgroundColor_e.BG_GRAY;
+//				break;
+//			case R.id.bgColorGreen:
+//				bgColor = backgroundColor_e.BG_GREEN;
+//				break;
+//			case R.id.bgColorBlue:
+//				bgColor = backgroundColor_e.BG_BLUE;
+//				break;
+//			case R.id.bgColorYellow:
+//				bgColor = backgroundColor_e.BG_YELLOW;
+//				break;
+//			case R.id.bgColorPink:
+//				bgColor = backgroundColor_e.BG_PINK;
+//				break;
+//			default:
+//				bgColor = backgroundColor_e.BG_GRAY;
+//			}
+//		}
 
-		if (cbIsBlur != null) {
-			isBlur = cbIsBlur.isChecked() ? 1 : 0;
-		}
+//		if (cbIsBlur != null) {
+//			isBlur = cbIsBlur.isChecked() ? 1 : 0;
+//		}
 	}
 
-	private boolean statusChanged() {
-		return (statusLevel != seekbarLevel) || (statusBgColor != bgColor.ordinal()) || (statusIsBlur != isBlur);
-	}
-
-	private void updateStatus() {
-		statusLevel = seekbarLevel;
-		statusBgColor = bgColor.ordinal();
-		statusIsBlur = isBlur;
-	}
+//	private boolean statusChanged() {
+//		return (statusLevel != seekbarLevel) || (statusBgColor != bgColor.ordinal()) || (statusIsBlur != isBlur);
+//	}
+//
+//	private void updateStatus() {
+//		statusLevel = seekbarLevel;
+//		//statusBgColor = bgColor.ordinal();
+//		statusIsBlur = isBlur;
+//	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -149,11 +149,11 @@ public class ProcessActivity extends Activity {
 
 		picSelected = false;
 		ivProcess = (ScaleImageView) findViewById(R.id.ivProcess);
-		btnRestore = (ImageButton) findViewById(R.id.btnRestore);
-		btnUndo = (ImageButton) findViewById(R.id.btnUndo);
-		btnConfirm = (ImageButton) findViewById(R.id.btnConfirm);
-		btnPickanother = (ImageButton) findViewById(R.id.btnPickanother);
-		cbIsBlur = (CheckBox) findViewById(R.id.cbBlur);
+		btnRestore = (ImageButton) findViewById(R.id.btnCancel1);
+		btnUndo = (ImageButton) findViewById(R.id.btnUndo1);
+		btnConfirm = (ImageButton) findViewById(R.id.btnConfirm1);
+		//btnPickanother = (ImageButton) findViewById(R.id.btnPickanother);
+		//cbIsBlur = (CheckBox) findViewById(R.id.cbBlur);
 		bgColor = backgroundColor_e.BG_GRAY;
 		// textView = (TextView) findViewById(R.id.textView);
 		// textView1 = (TextView) findViewById(R.id.textView1);
@@ -163,44 +163,44 @@ public class ProcessActivity extends Activity {
 		// textView.setTextColor(Color.rgb(255, 255, 255));
 		// textView_e tv_0 = textView_e.TV_SELECT_PIC;
 		// fresh_textView(tv_0);
-
-		findViewById(R.id.bgColorGray).setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				switchColorStatus(v);
-			}
-		});
-
-		findViewById(R.id.bgColorGreen).setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				switchColorStatus(v);
-			}
-		});
-
-		findViewById(R.id.bgColorBlue).setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				switchColorStatus(v);
-			}
-		});
-
-		findViewById(R.id.bgColorYellow).setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				switchColorStatus(v);
-			}
-		});
-
-		findViewById(R.id.bgColorPink).setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				switchColorStatus(v);
-			}
-		});
+//
+//		findViewById(R.id.bgColorGray).setOnClickListener(new View.OnClickListener() {
+//			public void onClick(View v) {
+//				switchColorStatus(v);
+//			}
+//		});
+//
+//		findViewById(R.id.bgColorGreen).setOnClickListener(new View.OnClickListener() {
+//			public void onClick(View v) {
+//				switchColorStatus(v);
+//			}
+//		});
+//
+//		findViewById(R.id.bgColorBlue).setOnClickListener(new View.OnClickListener() {
+//			public void onClick(View v) {
+//				switchColorStatus(v);
+//			}
+//		});
+//
+//		findViewById(R.id.bgColorYellow).setOnClickListener(new View.OnClickListener() {
+//			public void onClick(View v) {
+//				switchColorStatus(v);
+//			}
+//		});
+//
+//		findViewById(R.id.bgColorPink).setOnClickListener(new View.OnClickListener() {
+//			public void onClick(View v) {
+//				switchColorStatus(v);
+//			}
+//		});
 
 		Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.choosepic);
 
 		BitmapStore.setBitmapOriginal(image);
 
 		// 滑动条
-		ivSubtraction = (ImageView) findViewById(R.id.ivSubtraction);
-		ivAdd = (ImageView) findViewById(R.id.ivAdd);
+		ivSubtraction = (ImageView) findViewById(R.id.ivSubtraction1);
+		ivAdd = (ImageView) findViewById(R.id.ivAdd1);
 		seekBar = (SeekBar) findViewById(R.id.seekBar1);
 		seekBar.setMax(seekbarMaxLevel);
 
@@ -261,13 +261,13 @@ public class ProcessActivity extends Activity {
 			}
 		});
 
-		cbIsBlur.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				getParameters();
-			}
-		});
+//		cbIsBlur.setOnClickListener(new OnClickListener() {
+//			@Override
+//			public void onClick(View v) {
+//				// TODO Auto-generated method stub
+//				getParameters();
+//			}
+//		});
 
 		//
 		btnRestore.setOnClickListener(new OnClickListener() {
@@ -303,12 +303,12 @@ public class ProcessActivity extends Activity {
 			}
 		});
 
-		btnPickanother.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				pick_another_picture();
-			}
-		});
+//		btnPickanother.setOnClickListener(new OnClickListener() {
+//			@Override
+//			public void onClick(View v) {
+//				pick_another_picture();
+//			}
+//		});
 
 		mHandler = new Handler() {
 			@Override
@@ -316,8 +316,8 @@ public class ProcessActivity extends Activity {
 				if (msg.what == 1) {
 					// Log.i("chz", "process----------------");
 					getParameters();
-					ivProcess.setParameters(seekbarLevel, bgColor.ordinal(), isBlur);
-					ivProcess.processPicture();
+					//ivProcess.setParameters(seekbarLevel, bgColor.ordinal(), isBlur);
+					//ivProcess.processPicture();
 				}
 				super.handleMessage(msg);
 			}
@@ -328,12 +328,12 @@ public class ProcessActivity extends Activity {
 				while (true) {
 					try {
 						Thread.sleep(400);
-						if (statusChanged()) {
-							Message msg = mHandler.obtainMessage();
-							msg.what = 1;
-							msg.sendToTarget();
-							updateStatus();
-						}
+//						if (statusChanged()) {
+//							Message msg = mHandler.obtainMessage();
+//							msg.what = 1;
+//							msg.sendToTarget();
+//							updateStatus();
+//						}
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
