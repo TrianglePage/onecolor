@@ -3,23 +3,44 @@ package com.puzzleworld.onecolor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 
+import android.annotation.TargetApi;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.support.v7.app.ActionBar.Tab;
+import android.support.v7.app.ActionBar.TabListener;
+import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -27,10 +48,18 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.RatingBar;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -71,6 +100,12 @@ public class ProcessActivity extends Activity {
 	private int statusBgColor = 0;
 	private int statusIsBlur = 0;
 
+	private ViewPager mPager;// 页卡内容
+	private List<View> listViews; // Tab页面列表
+	private ImageView cursor;// 动画图片
+	private TextView t1, t2, t3, t4;// 页卡头标
+	private int currIndex = 0;// 当前页卡编号
+
 	private enum textView_e {
 		TV_SELECT_PIC, TV_CHANGE_LEVEL, TV_TOUCH_POINT, TV_CONFIRM, TV_MAX_NUM
 	};
@@ -78,83 +113,86 @@ public class ProcessActivity extends Activity {
 	private enum backgroundColor_e {
 		BG_GRAY, BG_GREEN, BG_BLUE, BG_YELLOW, BG_PINK
 	};
-//
-//	private void switchColorStatus(View tempColor) {
-//		if (currentSelectedColor == null) {
-//			currentSelectedColor = tempColor;
-//			bgShape = (GradientDrawable) currentSelectedColor.getBackground();
-//			bgShape.setStroke(3, Color.argb(200, 255, 255, 255));
-//			currentSelectedColor.setBackground(bgShape);
-//		} else {
-//			bgShape = (GradientDrawable) currentSelectedColor.getBackground();
-//			bgShape.setStroke(0, Color.argb(255, 255, 0, 0));
-//			currentSelectedColor.setBackground(bgShape);
-//
-//			if (currentSelectedColor == tempColor) {
-//				currentSelectedColor = null;
-//			} else {
-//				bgShape = (GradientDrawable) tempColor.getBackground();
-//				bgShape.setStroke(3, Color.argb(200, 255, 255, 255));
-//				tempColor.setBackground(bgShape);
-//				currentSelectedColor = tempColor;
-//			}
-//
-//		}
-//
-//		getParameters();
-//	}
 
-	private void getParameters() {
-//		if (currentSelectedColor != null) {
-//			switch (currentSelectedColor.getId()) {
-//			case R.id.bgColorGray:
-//				bgColor = backgroundColor_e.BG_GRAY;
-//				break;
-//			case R.id.bgColorGreen:
-//				bgColor = backgroundColor_e.BG_GREEN;
-//				break;
-//			case R.id.bgColorBlue:
-//				bgColor = backgroundColor_e.BG_BLUE;
-//				break;
-//			case R.id.bgColorYellow:
-//				bgColor = backgroundColor_e.BG_YELLOW;
-//				break;
-//			case R.id.bgColorPink:
-//				bgColor = backgroundColor_e.BG_PINK;
-//				break;
-//			default:
-//				bgColor = backgroundColor_e.BG_GRAY;
-//			}
-//		}
+	private void switchColorStatus(View tempColor) {
+		if (currentSelectedColor == null) {
+			currentSelectedColor = tempColor;
+			bgShape = (GradientDrawable) currentSelectedColor.getBackground();
+			bgShape.setStroke(3, Color.argb(200, 255, 255, 255));
+			currentSelectedColor.setBackground(bgShape);
+		} else {
+			bgShape = (GradientDrawable) currentSelectedColor.getBackground();
+			bgShape.setStroke(0, Color.argb(255, 255, 0, 0));
+			currentSelectedColor.setBackground(bgShape);
 
-//		if (cbIsBlur != null) {
-//			isBlur = cbIsBlur.isChecked() ? 1 : 0;
-//		}
+			if (currentSelectedColor == tempColor) {
+				currentSelectedColor = null;
+			} else {
+				bgShape = (GradientDrawable) tempColor.getBackground();
+				bgShape.setStroke(3, Color.argb(200, 255, 255, 255));
+				tempColor.setBackground(bgShape);
+				currentSelectedColor = tempColor;
+			}
+		}
+
+		getParameters();
 	}
 
-//	private boolean statusChanged() {
-//		return (statusLevel != seekbarLevel) || (statusBgColor != bgColor.ordinal()) || (statusIsBlur != isBlur);
-//	}
-//
-//	private void updateStatus() {
-//		statusLevel = seekbarLevel;
-//		//statusBgColor = bgColor.ordinal();
-//		statusIsBlur = isBlur;
-//	}
+	private void getParameters() {
+		if (currentSelectedColor != null) {
+			switch (currentSelectedColor.getId()) {
+			case R.id.bgColorGray:
+				bgColor = backgroundColor_e.BG_GRAY;
+				break;
+			case R.id.bgColorGreen:
+				bgColor = backgroundColor_e.BG_GREEN;
+				break;
+			case R.id.bgColorBlue:
+				bgColor = backgroundColor_e.BG_BLUE;
+				break;
+			case R.id.bgColorYellow:
+				bgColor = backgroundColor_e.BG_YELLOW;
+				break;
+			case R.id.bgColorPink:
+				bgColor = backgroundColor_e.BG_PINK;
+				break;
+			default:
+				bgColor = backgroundColor_e.BG_GRAY;
+			}
+		}
+
+		if (cbIsBlur != null) {
+			isBlur = cbIsBlur.isChecked() ? 1 : 0;
+		}
+	}
+
+	private boolean statusChanged() {
+		return (statusLevel != seekbarLevel) || (statusBgColor != bgColor.ordinal()) || (statusIsBlur != isBlur);
+	}
+
+	private void updateStatus() {
+		statusLevel = seekbarLevel;
+		statusBgColor = bgColor.ordinal();
+		statusIsBlur = isBlur;
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_process);
+		InitTextView();
+		InitViewPager();
+		InitImageView();
 
 		picSelected = false;
 		ivProcess = (ScaleImageView) findViewById(R.id.ivProcess);
 		btnRestore = (ImageButton) findViewById(R.id.btnCancel1);
 		btnUndo = (ImageButton) findViewById(R.id.btnUndo1);
 		btnConfirm = (ImageButton) findViewById(R.id.btnConfirm1);
-		//btnPickanother = (ImageButton) findViewById(R.id.btnPickanother);
-		//cbIsBlur = (CheckBox) findViewById(R.id.cbBlur);
+		// btnPickanother = (ImageButton) findViewById(R.id.btnPickanother);
+		cbIsBlur = (CheckBox) listViews.get(2).findViewById(R.id.cbBlur);
 		bgColor = backgroundColor_e.BG_GRAY;
+
 		// textView = (TextView) findViewById(R.id.textView);
 		// textView1 = (TextView) findViewById(R.id.textView1);
 
@@ -163,46 +201,47 @@ public class ProcessActivity extends Activity {
 		// textView.setTextColor(Color.rgb(255, 255, 255));
 		// textView_e tv_0 = textView_e.TV_SELECT_PIC;
 		// fresh_textView(tv_0);
-//
-//		findViewById(R.id.bgColorGray).setOnClickListener(new View.OnClickListener() {
-//			public void onClick(View v) {
-//				switchColorStatus(v);
-//			}
-//		});
-//
-//		findViewById(R.id.bgColorGreen).setOnClickListener(new View.OnClickListener() {
-//			public void onClick(View v) {
-//				switchColorStatus(v);
-//			}
-//		});
-//
-//		findViewById(R.id.bgColorBlue).setOnClickListener(new View.OnClickListener() {
-//			public void onClick(View v) {
-//				switchColorStatus(v);
-//			}
-//		});
-//
-//		findViewById(R.id.bgColorYellow).setOnClickListener(new View.OnClickListener() {
-//			public void onClick(View v) {
-//				switchColorStatus(v);
-//			}
-//		});
-//
-//		findViewById(R.id.bgColorPink).setOnClickListener(new View.OnClickListener() {
-//			public void onClick(View v) {
-//				switchColorStatus(v);
-//			}
-//		});
+
+		listViews.get(2).findViewById(R.id.bgColorGray).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				switchColorStatus(v);
+			}
+		});
+
+		listViews.get(2).findViewById(R.id.bgColorGreen).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				switchColorStatus(v);
+			}
+		});
+
+		listViews.get(2).findViewById(R.id.bgColorBlue).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				switchColorStatus(v);
+			}
+		});
+
+		listViews.get(2).findViewById(R.id.bgColorYellow).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				switchColorStatus(v);
+			}
+		});
+
+		listViews.get(2).findViewById(R.id.bgColorPink).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				switchColorStatus(v);
+			}
+		});
 
 		Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.choosepic);
 
 		BitmapStore.setBitmapOriginal(image);
 
 		// 滑动条
-		ivSubtraction = (ImageView) findViewById(R.id.ivSubtraction1);
-		ivAdd = (ImageView) findViewById(R.id.ivAdd1);
-		seekBar = (SeekBar) findViewById(R.id.seekBar1);
+		seekBar = (SeekBar) listViews.get(0).findViewById(R.id.seekBar1);
+
 		seekBar.setMax(seekbarMaxLevel);
+		ivSubtraction = (ImageView) listViews.get(0).findViewById(R.id.ivSubtraction1);
+		ivAdd = (ImageView) listViews.get(0).findViewById(R.id.ivAdd1);
 
 		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			public void onStopTrackingTouch(SeekBar seekBar) {
@@ -261,15 +300,14 @@ public class ProcessActivity extends Activity {
 			}
 		});
 
-//		cbIsBlur.setOnClickListener(new OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				// TODO Auto-generated method stub
-//				getParameters();
-//			}
-//		});
+		cbIsBlur.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				getParameters();
+			}
+		});
 
-		//
 		btnRestore.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -303,12 +341,12 @@ public class ProcessActivity extends Activity {
 			}
 		});
 
-//		btnPickanother.setOnClickListener(new OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				pick_another_picture();
-//			}
-//		});
+		// btnPickanother.setOnClickListener(new OnClickListener() {
+		// @Override
+		// public void onClick(View v) {
+		// pick_another_picture();
+		// }
+		// });
 
 		mHandler = new Handler() {
 			@Override
@@ -316,8 +354,8 @@ public class ProcessActivity extends Activity {
 				if (msg.what == 1) {
 					// Log.i("chz", "process----------------");
 					getParameters();
-					//ivProcess.setParameters(seekbarLevel, bgColor.ordinal(), isBlur);
-					//ivProcess.processPicture();
+					ivProcess.setParameters(seekbarLevel, bgColor.ordinal(), isBlur);
+					ivProcess.processPicture();
 				}
 				super.handleMessage(msg);
 			}
@@ -328,12 +366,13 @@ public class ProcessActivity extends Activity {
 				while (true) {
 					try {
 						Thread.sleep(400);
-//						if (statusChanged()) {
-//							Message msg = mHandler.obtainMessage();
-//							msg.what = 1;
-//							msg.sendToTarget();
-//							updateStatus();
-//						}
+						if (statusChanged()) {
+							Log.i("chz", "status changed");
+							Message msg = mHandler.obtainMessage();
+							msg.what = 1;
+							msg.sendToTarget();
+							updateStatus();
+						}
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -534,4 +573,146 @@ public class ProcessActivity extends Activity {
 		}
 	}
 
+	/****************************************
+	 * tab list
+	 **************************************************/
+	/**
+	 * 初始化头标
+	 */
+	private void InitTextView() {
+		t1 = (TextView) findViewById(R.id.text1);
+		t2 = (TextView) findViewById(R.id.text2);
+		t3 = (TextView) findViewById(R.id.text3);
+		t4 = (TextView) findViewById(R.id.text4);
+
+		t1.setOnClickListener(new MyOnClickListener(0));
+		t2.setOnClickListener(new MyOnClickListener(1));
+		t3.setOnClickListener(new MyOnClickListener(2));
+		t4.setOnClickListener(new MyOnClickListener(3));
+	}
+
+	/**
+	 * 头标点击监听
+	 */
+	public class MyOnClickListener implements View.OnClickListener {
+		private int index = 0;
+
+		public MyOnClickListener(int i) {
+			index = i;
+		}
+
+		@Override
+		public void onClick(View v) {
+			mPager.setCurrentItem(index);
+		}
+	};
+
+	/**
+	 * 初始化ViewPager
+	 */
+	private void InitViewPager() {
+		mPager = (ViewPager) findViewById(R.id.vPager);
+		listViews = new ArrayList<View>();
+		LayoutInflater mInflater = getLayoutInflater();
+		listViews.add(mInflater.inflate(R.layout.tab_card1, null));
+		listViews.add(mInflater.inflate(R.layout.tab_card2, null));
+		listViews.add(mInflater.inflate(R.layout.tab_card3, null));
+		listViews.add(mInflater.inflate(R.layout.tab_card4, null));
+		mPager.setAdapter(new MyPagerAdapter(listViews));
+		mPager.setCurrentItem(0);
+		mPager.setOnPageChangeListener(new MyOnPageChangeListener());
+	}
+
+	/**
+	 * 初始化动画
+	 */
+	private void InitImageView() {
+		cursor = (ImageView) findViewById(R.id.cursor);
+		Matrix matrix = new Matrix();
+		matrix.postTranslate(0, 0);
+		cursor.setImageMatrix(matrix);// 设置动画初始位置
+	}
+
+	/**
+	 * ViewPager适配器
+	 */
+	public class MyPagerAdapter extends PagerAdapter {
+		public List<View> mListViews;
+
+		public MyPagerAdapter(List<View> mListViews) {
+			this.mListViews = mListViews;
+		}
+
+		@Override
+		public void destroyItem(View arg0, int arg1, Object arg2) {
+			((ViewPager) arg0).removeView(mListViews.get(arg1));
+		}
+
+		@Override
+		public void finishUpdate(View arg0) {
+		}
+
+		@Override
+		public int getCount() {
+			return mListViews.size();
+		}
+
+		@Override
+		public Object instantiateItem(View arg0, int arg1) {
+			((ViewPager) arg0).addView(mListViews.get(arg1), 0);
+			return mListViews.get(arg1);
+		}
+
+		@Override
+		public boolean isViewFromObject(View arg0, Object arg1) {
+			return arg0 == (arg1);
+		}
+
+		@Override
+		public void restoreState(Parcelable arg0, ClassLoader arg1) {
+		}
+
+		@Override
+		public Parcelable saveState() {
+			return null;
+		}
+
+		@Override
+		public void startUpdate(View arg0) {
+		}
+	}
+
+	/**
+	 * 页卡切换监听
+	 */
+	public class MyOnPageChangeListener implements OnPageChangeListener {
+		WindowManager wm = ProcessActivity.this.getWindowManager();
+		int screanWidth = wm.getDefaultDisplay().getWidth();
+		int step = screanWidth / 4;
+		int fromX = 0;
+		int toX = 0;
+
+		@Override
+		public void onPageSelected(int arg0) {
+			Animation animation = null;
+			fromX = step * currIndex;
+			toX = step * arg0;
+			Log.i("chz", "fromX."+fromX+",toX."+toX);
+			animation = new TranslateAnimation(fromX, toX, 0, 0);
+			currIndex = arg0;
+			animation.setFillAfter(true);// True:图片停在动画结束位置
+			animation.setDuration(300);
+			cursor.setAnimation(animation);
+			/** 开始动画 */
+			animation.startNow();
+		}
+
+		@Override
+		public void onPageScrolled(int arg0, float arg1, int arg2) {
+		}
+
+		@Override
+		public void onPageScrollStateChanged(int arg0) {
+		}
+	}
 }
