@@ -2,7 +2,10 @@ package com.puzzleworld.onecolor;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,14 +21,17 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -64,8 +70,10 @@ import android.widget.RatingBar;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.ShapeDrawable;
+import android.media.MediaScannerConnection;
 
 public class ProcessActivity extends Activity {
 
@@ -73,7 +81,6 @@ public class ProcessActivity extends Activity {
 	private ImageButton btnRestore;
 	private ImageButton btnUndo;
 	private ImageButton btnRedo;
-	private ImageButton btnConfirm;
 	private ImageView btnPickanother;
 	private Bitmap showBitmap = null;
 	private ImageView ivSubtraction;
@@ -114,11 +121,11 @@ public class ProcessActivity extends Activity {
 	private enum backgroundColor_e {
 		BG_GRAY, BG_GREEN, BG_BLUE, BG_YELLOW, BG_PINK
 	};
-	
+
 	private void setBlurBackground() {
-		//背景是虚化的，这里设置处理级别为1，背景颜色是0，是否虚化是1
+		// 背景是虚化的，这里设置处理级别为1，背景颜色是0，是否虚化是1
 		ivProcess.setParameters(1, 0, 1);
-		int processPointXY[] = {1,1};
+		int processPointXY[] = { 1, 1 };
 		Bitmap bkpic = ivProcess.getProcessedPicture(processPointXY, 1);
 		LinearLayout bklayout = (LinearLayout) findViewById(R.id.layoutProcessPic);
 		bklayout.setBackground(new BitmapDrawable(bkpic));
@@ -199,7 +206,6 @@ public class ProcessActivity extends Activity {
 		btnRestore = (ImageButton) findViewById(R.id.btnCancel1);
 		btnUndo = (ImageButton) findViewById(R.id.btnUndo1);
 		btnRedo = (ImageButton) findViewById(R.id.btnRedo1);
-		btnConfirm = (ImageButton) findViewById(R.id.btnConfirm1);
 		btnPickanother = (ImageView) findViewById(R.id.ivChoosepic);
 		cbIsBlur = (CheckBox) listViews.get(2).findViewById(R.id.cbBlur);
 		bgColor = backgroundColor_e.BG_GRAY;
@@ -243,7 +249,35 @@ public class ProcessActivity extends Activity {
 			}
 		});
 
-		//未选择图片时这里设置背景
+		// 第四个选项卡中保存到本地按钮事件
+		listViews.get(3).findViewById(R.id.btnSave).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				saveImageToGallery(ProcessActivity.this, ((BitmapDrawable) ivProcess.getDrawable()).getBitmap());
+			}
+		});
+
+		listViews.get(3).findViewById(R.id.btnWeChat).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				// TODO:此处添加分享函数，参照上面保存到本地事件函数，获取bitmap;
+				Toast.makeText(ProcessActivity.this, "函数未集成，王坤加油", Toast.LENGTH_LONG).show();
+			}
+		});
+
+		listViews.get(3).findViewById(R.id.btnFriend).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				// TODO:此处添加分享函数，参照上面保存到本地事件函数，获取bitmap;
+				Toast.makeText(ProcessActivity.this, "函数未集成，王坤加油", Toast.LENGTH_LONG).show();
+			}
+		});
+
+		listViews.get(3).findViewById(R.id.btnWeibo).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				// TODO:此处添加分享函数，参照上面保存到本地事件函数，获取bitmap;
+				Toast.makeText(ProcessActivity.this, "函数未集成，王坤加油", Toast.LENGTH_LONG).show();
+			}
+		});
+
+		// 未选择图片时这里设置背景
 		Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.background);
 		LinearLayout bklayout = (LinearLayout) findViewById(R.id.layoutProcessPic);
 		bklayout.setBackground(new BitmapDrawable(image));
@@ -307,7 +341,7 @@ public class ProcessActivity extends Activity {
 				if (picSelected) {
 					// 已经选择了图片，处理图片在ScaleImageView中的监听函数中。
 				} else {
-					//pick_another_picture();
+					// pick_another_picture();
 				}
 			}
 		});
@@ -339,32 +373,18 @@ public class ProcessActivity extends Activity {
 				ivProcess.undo();
 			}
 		});
-		btnConfirm.setOnClickListener(new OnClickListener() {
 
+		btnPickanother.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				final Intent intent_preview = new Intent();
-
-				intent_preview.setClass(ProcessActivity.this, MoodPreviewActivity.class);
-				Bitmap image = ((BitmapDrawable) ivProcess.getDrawable()).getBitmap();
-				BitmapStore.setBitmapProcessed(image);
-				// ProcessActivity.this.startActivity(intent_preview);
-				startActivityForResult(intent_preview, 1);
+				pick_another_picture();
 			}
 		});
-
-		 btnPickanother.setOnClickListener(new OnClickListener() {
-		 @Override
-		 public void onClick(View v) {
-		 pick_another_picture();
-		 }
-		 });
 
 		mHandler = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
 				if (msg.what == 1) {
-					// Log.i("chz", "process----------------");
 					getParameters();
 					ivProcess.setParameters(seekbarLevel, bgColor.ordinal(), isBlur);
 					ivProcess.processPicture();
@@ -589,9 +609,9 @@ public class ProcessActivity extends Activity {
 	/****************************************
 	 * tab list
 	 **************************************************/
-	boolean isHidden[] = {true,true,true,true};
+	boolean isHidden[] = { true, true, true, true };
 	int currentTab = 0;
-	
+
 	/**
 	 * 初始化头标
 	 */
@@ -607,6 +627,7 @@ public class ProcessActivity extends Activity {
 		t4.setOnClickListener(new MyOnClickListener(3));
 		currentTab = 0;
 	}
+
 	/**
 	 * 头标点击监听
 	 */
@@ -616,49 +637,47 @@ public class ProcessActivity extends Activity {
 		public MyOnClickListener(int i) {
 			index = i;
 		}
-		
+
 		private void switchRightButtonVisible(int bottomTabIndex) {
 			float fromX = 0;
 			float toX = 0;
 
 			int isVisible = 0;
-			if(isHidden[bottomTabIndex]) {
-				//当前底边栏不可见，如果右边栏可见切出
-				if(btnUndo.getVisibility() == View.VISIBLE) {
+			if (isHidden[bottomTabIndex]) {
+				// 当前底边栏不可见，如果右边栏可见切出
+				if (btnUndo.getVisibility() == View.VISIBLE) {
 					toX = 2.0f;
 					isVisible = View.INVISIBLE;
 				}
 			} else {
-				//当前底边栏可见，如果右边栏不可见则切入
-				if(btnUndo.getVisibility() == View.INVISIBLE) {
+				// 当前底边栏可见，如果右边栏不可见则切入
+				if (btnUndo.getVisibility() == View.INVISIBLE) {
 					fromX = 2.0f;
 					isVisible = View.VISIBLE;
 				}
 			}
 
-	        TranslateAnimation rightSwitchAction = new TranslateAnimation(Animation.RELATIVE_TO_SELF, fromX,
-	        		Animation.RELATIVE_TO_SELF, toX, Animation.RELATIVE_TO_SELF,
-	        		0.0f, Animation.RELATIVE_TO_SELF, 0.0f);
-	        
-	        rightSwitchAction.setDuration(300);
+			TranslateAnimation rightSwitchAction = new TranslateAnimation(Animation.RELATIVE_TO_SELF, fromX,
+					Animation.RELATIVE_TO_SELF, toX, Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF,
+					0.0f);
+
+			rightSwitchAction.setDuration(300);
 			btnRedo.startAnimation(rightSwitchAction);
 			btnRedo.setVisibility(isVisible);
 			btnUndo.startAnimation(rightSwitchAction);
 			btnUndo.setVisibility(isVisible);
-			btnConfirm.startAnimation(rightSwitchAction);
-			btnConfirm.setVisibility(isVisible);
 			btnRestore.startAnimation(rightSwitchAction);
 			btnRestore.setVisibility(isVisible);
 
 		}
-		
+
 		private void switchToolBarVisible(int index) {
-			//底部工具动画坐标
+			// 底部工具动画坐标
 			float fromY = 0;
 			float toY = 0;
 
 			int isVisible = 0;
-			if(isHidden[index]) {
+			if (isHidden[index]) {
 				fromY = 1.0f;
 				isHidden[index] = false;
 				isVisible = View.VISIBLE;
@@ -667,23 +686,23 @@ public class ProcessActivity extends Activity {
 				isHidden[index] = true;
 				isVisible = View.INVISIBLE;
 			}
-	        TranslateAnimation bottomSwitchAction = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f,
-	        		Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF,
-	        		fromY, Animation.RELATIVE_TO_SELF, toY);
-	        
-	        bottomSwitchAction.setDuration(300);
+			TranslateAnimation bottomSwitchAction = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f,
+					Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF, fromY, Animation.RELATIVE_TO_SELF,
+					toY);
+
+			bottomSwitchAction.setDuration(300);
 			listViews.get(index).startAnimation(bottomSwitchAction);
 			listViews.get(index).setVisibility(isVisible);
 			switchRightButtonVisible(index);
 		}
 
 		@Override
-		public void onClick(View v) {         
+		public void onClick(View v) {
 			mPager.setCurrentItem(index);
-			if(index == currentTab) {
+			if (index == currentTab) {
 				switchToolBarVisible(index);
 			} else {
-				if(isHidden[index]) {
+				if (isHidden[index]) {
 					switchToolBarVisible(index);
 				} else {
 					switchRightButtonVisible(index);
@@ -704,7 +723,7 @@ public class ProcessActivity extends Activity {
 		listViews.add(mInflater.inflate(R.layout.tab_card2, null));
 		listViews.add(mInflater.inflate(R.layout.tab_card3, null));
 		listViews.add(mInflater.inflate(R.layout.tab_card4, null));
-		for(int i = 0; i<3; i++) {
+		for (int i = 0; i < 3; i++) {
 			listViews.get(i).setVisibility(View.INVISIBLE);
 		}
 		mPager.setAdapter(new MyPagerAdapter(listViews));
@@ -786,7 +805,7 @@ public class ProcessActivity extends Activity {
 			Animation animation = null;
 			fromX = step * currIndex;
 			toX = step * arg0;
-			Log.i("chz", "fromX."+fromX+",toX."+toX);
+			Log.i("chz", "fromX." + fromX + ",toX." + toX);
 			animation = new TranslateAnimation(fromX, toX, 0, 0);
 			currIndex = arg0;
 			animation.setFillAfter(true);// True:图片停在动画结束位置
@@ -803,5 +822,42 @@ public class ProcessActivity extends Activity {
 		@Override
 		public void onPageScrollStateChanged(int arg0) {
 		}
+	}
+
+	/*********************************** 保存图片到本地 ********************************/
+	private static void saveImageToGallery(Context context, Bitmap bmp) {
+		// 首先保存图片
+		String pathname = "OneColor";
+		File appDir = new File(Environment.getExternalStorageDirectory(), pathname);
+		if (!appDir.exists()) {
+			appDir.mkdir();
+		}
+
+		String savePath = "file:/" + Environment.getExternalStorageDirectory() + "/" + pathname;
+
+		String fileName = System.currentTimeMillis() + ".jpg";
+		File file = new File(appDir, fileName);
+		try {
+			FileOutputStream fos = new FileOutputStream(file);
+			bmp.compress(CompressFormat.JPEG, 100, fos);
+			fos.flush();
+			fos.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		// 其次把文件插入到系统图库
+		try {
+			MediaStore.Images.Media.insertImage(context.getContentResolver(), file.getAbsolutePath(), fileName, null);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		// 最后通知图库更新
+		// context.sendBroadcast(new
+		// Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse(savePath)));
+		MediaScannerConnection.scanFile(context, new String[] { savePath }, null, null);
+		Toast.makeText(context, "图片保存至：" + savePath, Toast.LENGTH_LONG).show();
 	}
 }

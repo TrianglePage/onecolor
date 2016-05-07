@@ -73,13 +73,12 @@
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_gravity="bottom|right"
-                android:layout_marginBottom="150dp"
-                android:layout_marginRight="30dp"
+                android:layout_marginBottom="110dp"
+                android:layout_marginRight="20dp"
                 android:layout_weight="0"
                 android:visibility="invisible"
                 android:background="@drawable/undo1"
                 android:paddingLeft="0dp"
-                android:paddingRight="0dp"
                 android:scaleType="center" />
 
             <ImageButton
@@ -87,24 +86,11 @@
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_gravity="bottom|right"
-                android:layout_marginBottom="110dp"
-                android:layout_marginRight="30dp"
+                android:layout_marginBottom="70dp"
+                android:layout_marginRight="20dp"
                 android:layout_weight="0"
                 android:visibility="invisible"
                 android:background="@drawable/redo"
-                android:paddingLeft="0dp"
-                android:scaleType="center" />
-
-            <ImageButton
-                android:id="@+id/btnConfirm1"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_gravity="bottom|right"
-                android:layout_marginBottom="70dp"
-                android:layout_marginRight="30dp"
-                android:layout_weight="0"
-                android:visibility="invisible"
-                android:background="@drawable/confirm1"
                 android:paddingLeft="0dp"
                 android:scaleType="center" />
 
@@ -114,7 +100,7 @@
                 android:layout_height="30dp"
                 android:layout_gravity="bottom|right"
                 android:layout_marginBottom="30dp"
-                android:layout_marginRight="30dp"
+                android:layout_marginRight="20dp"
                 android:layout_weight="0"
                 android:visibility="invisible"
                 android:background="@drawable/cancel1"
