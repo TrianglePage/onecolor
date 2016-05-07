@@ -72,8 +72,9 @@ public class ProcessActivity extends Activity {
 	private ScaleImageView ivProcess;
 	private ImageButton btnRestore;
 	private ImageButton btnUndo;
+	private ImageButton btnRedo;
 	private ImageButton btnConfirm;
-	private ImageButton btnPickanother;
+	private ImageView btnPickanother;
 	private Bitmap showBitmap = null;
 	private ImageView ivSubtraction;
 	private ImageView ivAdd;
@@ -85,7 +86,7 @@ public class ProcessActivity extends Activity {
 	private Thread myThread;
 	private int seekbarLevel = 0;
 	private Handler mHandler;
-	private boolean selectedNew = true;
+	private boolean selectedNew = false;
 	private CheckBox cbIsBlur;
 
 	private GradientDrawable bgShape;
@@ -113,6 +114,15 @@ public class ProcessActivity extends Activity {
 	private enum backgroundColor_e {
 		BG_GRAY, BG_GREEN, BG_BLUE, BG_YELLOW, BG_PINK
 	};
+	
+	private void setBlurBackground() {
+		//背景是虚化的，这里设置处理级别为1，背景颜色是0，是否虚化是1
+		ivProcess.setParameters(1, 0, 1);
+		int processPointXY[] = {1,1};
+		Bitmap bkpic = ivProcess.getProcessedPicture(processPointXY, 1);
+		LinearLayout bklayout = (LinearLayout) findViewById(R.id.layoutProcessPic);
+		bklayout.setBackground(new BitmapDrawable(bkpic));
+	}
 
 	private void switchColorStatus(View tempColor) {
 		if (currentSelectedColor == null) {
@@ -188,8 +198,9 @@ public class ProcessActivity extends Activity {
 		ivProcess = (ScaleImageView) findViewById(R.id.ivProcess);
 		btnRestore = (ImageButton) findViewById(R.id.btnCancel1);
 		btnUndo = (ImageButton) findViewById(R.id.btnUndo1);
+		btnRedo = (ImageButton) findViewById(R.id.btnRedo1);
 		btnConfirm = (ImageButton) findViewById(R.id.btnConfirm1);
-		// btnPickanother = (ImageButton) findViewById(R.id.btnPickanother);
+		btnPickanother = (ImageView) findViewById(R.id.ivChoosepic);
 		cbIsBlur = (CheckBox) listViews.get(2).findViewById(R.id.cbBlur);
 		bgColor = backgroundColor_e.BG_GRAY;
 
@@ -232,9 +243,10 @@ public class ProcessActivity extends Activity {
 			}
 		});
 
-		Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.choosepic);
-
-		BitmapStore.setBitmapOriginal(image);
+		//未选择图片时这里设置背景
+		Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+		LinearLayout bklayout = (LinearLayout) findViewById(R.id.layoutProcessPic);
+		bklayout.setBackground(new BitmapDrawable(image));
 
 		// 滑动条
 		seekBar = (SeekBar) listViews.get(0).findViewById(R.id.seekBar1);
@@ -295,7 +307,7 @@ public class ProcessActivity extends Activity {
 				if (picSelected) {
 					// 已经选择了图片，处理图片在ScaleImageView中的监听函数中。
 				} else {
-					pick_another_picture();
+					//pick_another_picture();
 				}
 			}
 		});
@@ -341,12 +353,12 @@ public class ProcessActivity extends Activity {
 			}
 		});
 
-		// btnPickanother.setOnClickListener(new OnClickListener() {
-		// @Override
-		// public void onClick(View v) {
-		// pick_another_picture();
-		// }
-		// });
+		 btnPickanother.setOnClickListener(new OnClickListener() {
+		 @Override
+		 public void onClick(View v) {
+		 pick_another_picture();
+		 }
+		 });
 
 		mHandler = new Handler() {
 			@Override
@@ -458,6 +470,7 @@ public class ProcessActivity extends Activity {
 				BitmapStore.setBitmapOriginal(showBitmap);
 				picSelected = true;
 				selectedNew = true;
+				setBlurBackground();
 				// Log.i("PickpicActivity", "pick up picture ok!");
 				// ivProcess.setImageBitmap(showBitmap);
 			} catch (FileNotFoundException e) {
@@ -576,6 +589,9 @@ public class ProcessActivity extends Activity {
 	/****************************************
 	 * tab list
 	 **************************************************/
+	boolean isHidden[] = {true,true,true,true};
+	int currentTab = 0;
+	
 	/**
 	 * 初始化头标
 	 */
@@ -589,8 +605,8 @@ public class ProcessActivity extends Activity {
 		t2.setOnClickListener(new MyOnClickListener(1));
 		t3.setOnClickListener(new MyOnClickListener(2));
 		t4.setOnClickListener(new MyOnClickListener(3));
+		currentTab = 0;
 	}
-
 	/**
 	 * 头标点击监听
 	 */
@@ -600,10 +616,80 @@ public class ProcessActivity extends Activity {
 		public MyOnClickListener(int i) {
 			index = i;
 		}
+		
+		private void switchRightButtonVisible(int bottomTabIndex) {
+			float fromX = 0;
+			float toX = 0;
+
+			int isVisible = 0;
+			if(isHidden[bottomTabIndex]) {
+				//当前底边栏不可见，如果右边栏可见切出
+				if(btnUndo.getVisibility() == View.VISIBLE) {
+					toX = 2.0f;
+					isVisible = View.INVISIBLE;
+				}
+			} else {
+				//当前底边栏可见，如果右边栏不可见则切入
+				if(btnUndo.getVisibility() == View.INVISIBLE) {
+					fromX = 2.0f;
+					isVisible = View.VISIBLE;
+				}
+			}
+
+	        TranslateAnimation rightSwitchAction = new TranslateAnimation(Animation.RELATIVE_TO_SELF, fromX,
+	        		Animation.RELATIVE_TO_SELF, toX, Animation.RELATIVE_TO_SELF,
+	        		0.0f, Animation.RELATIVE_TO_SELF, 0.0f);
+	        
+	        rightSwitchAction.setDuration(300);
+			btnRedo.startAnimation(rightSwitchAction);
+			btnRedo.setVisibility(isVisible);
+			btnUndo.startAnimation(rightSwitchAction);
+			btnUndo.setVisibility(isVisible);
+			btnConfirm.startAnimation(rightSwitchAction);
+			btnConfirm.setVisibility(isVisible);
+			btnRestore.startAnimation(rightSwitchAction);
+			btnRestore.setVisibility(isVisible);
+
+		}
+		
+		private void switchToolBarVisible(int index) {
+			//底部工具动画坐标
+			float fromY = 0;
+			float toY = 0;
+
+			int isVisible = 0;
+			if(isHidden[index]) {
+				fromY = 1.0f;
+				isHidden[index] = false;
+				isVisible = View.VISIBLE;
+			} else {
+				toY = 1.0f;
+				isHidden[index] = true;
+				isVisible = View.INVISIBLE;
+			}
+	        TranslateAnimation bottomSwitchAction = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0.0f,
+	        		Animation.RELATIVE_TO_SELF, 0.0f, Animation.RELATIVE_TO_SELF,
+	        		fromY, Animation.RELATIVE_TO_SELF, toY);
+	        
+	        bottomSwitchAction.setDuration(300);
+			listViews.get(index).startAnimation(bottomSwitchAction);
+			listViews.get(index).setVisibility(isVisible);
+			switchRightButtonVisible(index);
+		}
 
 		@Override
-		public void onClick(View v) {
+		public void onClick(View v) {         
 			mPager.setCurrentItem(index);
+			if(index == currentTab) {
+				switchToolBarVisible(index);
+			} else {
+				if(isHidden[index]) {
+					switchToolBarVisible(index);
+				} else {
+					switchRightButtonVisible(index);
+				}
+			}
+			currentTab = index;
 		}
 	};
 
@@ -618,6 +704,9 @@ public class ProcessActivity extends Activity {
 		listViews.add(mInflater.inflate(R.layout.tab_card2, null));
 		listViews.add(mInflater.inflate(R.layout.tab_card3, null));
 		listViews.add(mInflater.inflate(R.layout.tab_card4, null));
+		for(int i = 0; i<3; i++) {
+			listViews.get(i).setVisibility(View.INVISIBLE);
+		}
 		mPager.setAdapter(new MyPagerAdapter(listViews));
 		mPager.setCurrentItem(0);
 		mPager.setOnPageChangeListener(new MyOnPageChangeListener());

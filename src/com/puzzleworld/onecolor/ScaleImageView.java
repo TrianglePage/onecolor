@@ -90,9 +90,9 @@ public class ScaleImageView extends ImageView {
 			// Log.i("chz", "w = " + this.getWidth() + ",h = " +
 			// this.getHeight() + ",bw =" + bm.getWidth() + ",bh="
 			// + bm.getHeight());
-			offsetX = (this.getWidth() - bm.getWidth()) / 2;
-			offsetY = (this.getHeight() - bm.getHeight()) / 2;
-			matrix.postTranslate(offsetX, offsetY);
+//			offsetX = (this.getWidth() - bm.getWidth()) / 2;
+//			offsetY = (this.getHeight() - bm.getHeight()) / 2;
+//			matrix.postTranslate(offsetX, offsetY);
 		}
 
 		setImageMatrix(matrix);
@@ -221,21 +221,23 @@ public class ScaleImageView extends ImageView {
 		if (touchPointsCount == 0) {
 			this.setImageBitmap(BitmapStore.getBitmapOriginal());
 		} else if (touchPointsCount > 0) {
-			Bitmap showBitmap = BitmapStore.getBitmapOriginal();
-			int w = showBitmap.getWidth(), h = showBitmap.getHeight();
-			// 获取bitmap像素颜色值存入pix数组，后面传入算法
-			int[] pix = new int[w * h];
-			showBitmap.getPixels(pix, 0, w, 0, 0, w, h);
-			// Log.i("chz", "img w=" + this.getWidth() + ", h=" +
-			// this.getHeight() +
-			// ", bitmap w=" + showBitmap.getWidth()
-			// + ",h=" + showBitmap.getHeight());
-			int[] resultInt = ImgFun(pix, w, h, touchPoints, touchPointsCount, mLevel, mColor, mIsBlur);
-			Bitmap resultImg = Bitmap.createBitmap(w, h, Config.ARGB_8888);
-			resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
+			Bitmap resultImg = getProcessedPicture(touchPoints, touchPointsCount);
 			processed = true;
 			this.setImageBitmap(resultImg);
 			processed = false;
 		}
+	}
+	
+	//处理一张图片返回，不设置到view中
+	public Bitmap getProcessedPicture(int touchPoints[], int touchPointsCount ) {
+		Bitmap showBitmap = BitmapStore.getBitmapOriginal();
+		int w = showBitmap.getWidth(), h = showBitmap.getHeight();
+		// 获取bitmap像素颜色值存入pix数组，后面传入算法
+		int[] pix = new int[w * h];
+		showBitmap.getPixels(pix, 0, w, 0, 0, w, h);
+		int[] resultInt = ImgFun(pix, w, h, touchPoints, touchPointsCount, mLevel, mColor, mIsBlur);
+		Bitmap resultImg = Bitmap.createBitmap(w, h, Config.ARGB_8888);
+		resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
+		return resultImg;
 	}
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutProcessPic"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="#FFFFFFFF"
@@ -10,12 +11,23 @@
         android:layout_height="50dp"
         android:background="#FF37AA9D"
         android:orientation="horizontal" >
-
+        <ImageView
+            android:id="@+id/ivChoosepic"
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginTop="5dp"
+            android:layout_weight="0.15"
+            android:scaleType="fitCenter"
+            android:src="@drawable/choosepic" />
+        
         <TextView
             android:id="@+id/tvSpace"
             android:layout_width="0dp"
             android:layout_height="fill_parent"
-            android:layout_weight="0.85"
+            android:layout_weight="0.7"
             android:paddingLeft="20dp" />
 
         <ImageView
@@ -64,6 +76,7 @@
                 android:layout_marginBottom="150dp"
                 android:layout_marginRight="30dp"
                 android:layout_weight="0"
+                android:visibility="invisible"
                 android:background="@drawable/undo1"
                 android:paddingLeft="0dp"
                 android:paddingRight="0dp"
@@ -77,6 +90,7 @@
                 android:layout_marginBottom="110dp"
                 android:layout_marginRight="30dp"
                 android:layout_weight="0"
+                android:visibility="invisible"
                 android:background="@drawable/redo"
                 android:paddingLeft="0dp"
                 android:scaleType="center" />
@@ -89,6 +103,7 @@
                 android:layout_marginBottom="70dp"
                 android:layout_marginRight="30dp"
                 android:layout_weight="0"
+                android:visibility="invisible"
                 android:background="@drawable/confirm1"
                 android:paddingLeft="0dp"
                 android:scaleType="center" />
@@ -101,6 +116,7 @@
                 android:layout_marginBottom="30dp"
                 android:layout_marginRight="30dp"
                 android:layout_weight="0"
+                android:visibility="invisible"
                 android:background="@drawable/cancel1"
                 android:paddingLeft="0dp"
                 android:scaleType="center" />
@@ -119,7 +135,7 @@
             android:layout_height="0dp"
             android:layout_gravity="center"
             android:layout_weight="0.45"
-            android:background="#FFFFFFFF"
+            android:background="#00FFFFFF"
             android:flipInterval="30"
             android:persistentDrawingCache="animation" />
 
@@ -134,8 +150,7 @@
             <ImageView
                 android:id="@+id/cursor"
                 android:layout_width="fill_parent"
-                android:layout_height="0dp"
-                android:layout_weight="0.1"
+                android:layout_height="3dp"
                 android:scaleType="matrix"
                 android:src="@drawable/animation" />
 
