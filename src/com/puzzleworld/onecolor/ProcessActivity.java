@@ -81,6 +81,7 @@ public class ProcessActivity extends Activity {
 	private ImageButton btnRestore;
 	private ImageButton btnUndo;
 	private ImageButton btnRedo;
+	private ImageButton btnSave;
 	private ImageView btnPickanother;
 	private Bitmap showBitmap = null;
 	private ImageView ivSubtraction;
@@ -206,6 +207,7 @@ public class ProcessActivity extends Activity {
 		btnRestore = (ImageButton) findViewById(R.id.btnCancel1);
 		btnUndo = (ImageButton) findViewById(R.id.btnUndo1);
 		btnRedo = (ImageButton) findViewById(R.id.btnRedo1);
+		btnSave = (ImageButton) findViewById(R.id.btnSave);
 		btnPickanother = (ImageView) findViewById(R.id.ivChoosepic);
 		cbIsBlur = (CheckBox) listViews.get(2).findViewById(R.id.cbBlur);
 		bgColor = backgroundColor_e.BG_GRAY;
@@ -249,13 +251,7 @@ public class ProcessActivity extends Activity {
 			}
 		});
 
-		// 第四个选项卡中保存到本地按钮事件
-		listViews.get(3).findViewById(R.id.btnSave).setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				saveImageToGallery(ProcessActivity.this, ((BitmapDrawable) ivProcess.getDrawable()).getBitmap());
-			}
-		});
-
+		// 第四个选项卡中按钮事件
 		listViews.get(3).findViewById(R.id.btnWeChat).setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				// TODO:此处添加分享函数，参照上面保存到本地事件函数，获取bitmap;
@@ -366,6 +362,14 @@ public class ProcessActivity extends Activity {
 			}
 		});
 
+		btnSave.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				saveImageToGallery(ProcessActivity.this, ((BitmapDrawable) ivProcess.getDrawable()).getBitmap());
+			}
+		});
+		
 		btnUndo.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -373,7 +377,7 @@ public class ProcessActivity extends Activity {
 				ivProcess.undo();
 			}
 		});
-
+		
 		btnPickanother.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -666,6 +670,8 @@ public class ProcessActivity extends Activity {
 			btnRedo.setVisibility(isVisible);
 			btnUndo.startAnimation(rightSwitchAction);
 			btnUndo.setVisibility(isVisible);
+			btnSave.startAnimation(rightSwitchAction);
+			btnSave.setVisibility(isVisible);
 			btnRestore.startAnimation(rightSwitchAction);
 			btnRestore.setVisibility(isVisible);
 
@@ -737,7 +743,7 @@ public class ProcessActivity extends Activity {
 	private void InitImageView() {
 		cursor = (ImageView) findViewById(R.id.cursor);
 		Matrix matrix = new Matrix();
-		matrix.postTranslate(0, 0);
+		matrix.postTranslate(40, 0);
 		cursor.setImageMatrix(matrix);// 设置动画初始位置
 	}
 
@@ -795,7 +801,7 @@ public class ProcessActivity extends Activity {
 	 */
 	public class MyOnPageChangeListener implements OnPageChangeListener {
 		WindowManager wm = ProcessActivity.this.getWindowManager();
-		int screanWidth = wm.getDefaultDisplay().getWidth();
+		int screanWidth = wm.getDefaultDisplay().getWidth() - 60;
 		int step = screanWidth / 4;
 		int fromX = 0;
 		int toX = 0;
@@ -812,7 +818,7 @@ public class ProcessActivity extends Activity {
 			animation.setDuration(300);
 			cursor.setAnimation(animation);
 			/** 开始动画 */
-			animation.startNow();
+			cursor.startAnimation(animation);
 		}
 
 		@Override
