@@ -9,71 +9,49 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.annotation.TargetApi;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.graphics.Bitmap.CompressFormat;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.GradientDrawable;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.provider.MediaStore;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
-import android.support.v7.app.ActionBar.Tab;
-import android.support.v7.app.ActionBar.TabListener;
-import android.support.v7.app.AppCompatActivity;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.RatingBar;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.media.MediaScannerConnection;
 
 public class ProcessActivity extends Activity {
 
@@ -108,12 +86,13 @@ public class ProcessActivity extends Activity {
 	private int statusLevel = 0;
 	private int statusBgColor = 0;
 	private int statusIsBlur = 0;
-
+	private ImageProcesser mIp;
 	private ViewPager mPager;// 页卡内容
 	private List<View> listViews; // Tab页面列表
 	private ImageView cursor;// 动画图片
 	private TextView t1, t2, t3, t4;// 页卡头标
 	private int currIndex = 0;// 当前页卡编号
+	private ProgressDialog pd;
 
 	private enum textView_e {
 		TV_SELECT_PIC, TV_CHANGE_LEVEL, TV_TOUCH_POINT, TV_CONFIRM, TV_MAX_NUM
@@ -125,11 +104,16 @@ public class ProcessActivity extends Activity {
 
 	private void setBlurBackground() {
 		// 背景是虚化的，这里设置处理级别为1，背景颜色是0，是否虚化是1
-		ivProcess.setParameters(1, 0, 1);
-		int processPointXY[] = { 1, 1 };
-		Bitmap bkpic = ivProcess.getProcessedPicture(processPointXY, 1);
+		ImageProcesser ip = ImageProcesser.getInstance();
+		ip.setBgColor(0);
+		ip.setLevel(1);
+		ip.setBlur(1);
+		int touchPoints[] = { 1, 1 };
+		ip.setTouchPoints(touchPoints, 1);
+		Bitmap bkpic = ip.processImage(BitmapStore.getBitmapOriginal());
 		LinearLayout bklayout = (LinearLayout) findViewById(R.id.layoutProcessPic);
 		bklayout.setBackground(new BitmapDrawable(bkpic));
+		ip.delTouchPoint();
 	}
 
 	private void switchColorStatus(View tempColor) {
@@ -152,11 +136,9 @@ public class ProcessActivity extends Activity {
 				currentSelectedColor = tempColor;
 			}
 		}
-
-		getParameters();
 	}
 
-	private void getParameters() {
+	private void setParameters() {
 		if (currentSelectedColor != null) {
 			switch (currentSelectedColor.getId()) {
 			case R.id.bgColorGray:
@@ -182,16 +164,23 @@ public class ProcessActivity extends Activity {
 		if (cbIsBlur != null) {
 			isBlur = cbIsBlur.isChecked() ? 1 : 0;
 		}
+
+		mIp.setBgColor(bgColor.ordinal());
+		mIp.setBlur(isBlur);
 	}
 
-	private boolean statusChanged() {
-		return (statusLevel != seekbarLevel) || (statusBgColor != bgColor.ordinal()) || (statusIsBlur != isBlur);
-	}
-
-	private void updateStatus() {
-		statusLevel = seekbarLevel;
-		statusBgColor = bgColor.ordinal();
-		statusIsBlur = isBlur;
+	private void callProcessPic() {
+		/* 显示ProgressDialog */
+		pd = ProgressDialog.show(ProcessActivity.this, "请稍后", "正在处理……");
+		/* 开启一个新线程，在新线程里执行耗时的方法 */
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				// 耗时的方法
+				BitmapStore.setBitmapProcessed(mIp.processImage(BitmapStore.getBitmapOriginal()));
+				mHandler.sendEmptyMessage(0);// 执行耗时的方法之后发送消给handler
+			}
+		}).start();
 	}
 
 	@Override
@@ -203,6 +192,7 @@ public class ProcessActivity extends Activity {
 		InitImageView();
 
 		picSelected = false;
+		mIp = ImageProcesser.getInstance();
 		ivProcess = (ScaleImageView) findViewById(R.id.ivProcess);
 		btnRestore = (ImageButton) findViewById(R.id.btnCancel1);
 		btnUndo = (ImageButton) findViewById(R.id.btnUndo1);
@@ -212,47 +202,54 @@ public class ProcessActivity extends Activity {
 		cbIsBlur = (CheckBox) listViews.get(2).findViewById(R.id.cbBlur);
 		bgColor = backgroundColor_e.BG_GRAY;
 
-		// textView = (TextView) findViewById(R.id.textView);
-		// textView1 = (TextView) findViewById(R.id.textView1);
-
-		// textView 点击更新
-		// textView.getPaint().setFakeBoldText(true);
-		// textView.setTextColor(Color.rgb(255, 255, 255));
-		// textView_e tv_0 = textView_e.TV_SELECT_PIC;
-		// fresh_textView(tv_0);
-
 		listViews.get(2).findViewById(R.id.bgColorGray).setOnClickListener(new View.OnClickListener() {
+			@Override
 			public void onClick(View v) {
 				switchColorStatus(v);
+				setParameters();
+				callProcessPic();
 			}
 		});
 
 		listViews.get(2).findViewById(R.id.bgColorGreen).setOnClickListener(new View.OnClickListener() {
+			@Override
 			public void onClick(View v) {
 				switchColorStatus(v);
+				setParameters();
+				callProcessPic();
 			}
 		});
 
 		listViews.get(2).findViewById(R.id.bgColorBlue).setOnClickListener(new View.OnClickListener() {
+			@Override
 			public void onClick(View v) {
 				switchColorStatus(v);
+				setParameters();
+				callProcessPic();
 			}
 		});
 
 		listViews.get(2).findViewById(R.id.bgColorYellow).setOnClickListener(new View.OnClickListener() {
+			@Override
 			public void onClick(View v) {
 				switchColorStatus(v);
+				setParameters();
+				callProcessPic();
 			}
 		});
 
 		listViews.get(2).findViewById(R.id.bgColorPink).setOnClickListener(new View.OnClickListener() {
+			@Override
 			public void onClick(View v) {
 				switchColorStatus(v);
+				setParameters();
+				callProcessPic();
 			}
 		});
 
 		// 第四个选项卡中按钮事件
 		listViews.get(3).findViewById(R.id.btnWeChat).setOnClickListener(new View.OnClickListener() {
+			@Override
 			public void onClick(View v) {
 				// TODO:此处添加分享函数，参照上面保存到本地事件函数，获取bitmap;
 				Toast.makeText(ProcessActivity.this, "函数未集成，王坤加油", Toast.LENGTH_LONG).show();
@@ -260,6 +257,7 @@ public class ProcessActivity extends Activity {
 		});
 
 		listViews.get(3).findViewById(R.id.btnFriend).setOnClickListener(new View.OnClickListener() {
+			@Override
 			public void onClick(View v) {
 				// TODO:此处添加分享函数，参照上面保存到本地事件函数，获取bitmap;
 				Toast.makeText(ProcessActivity.this, "函数未集成，王坤加油", Toast.LENGTH_LONG).show();
@@ -267,6 +265,7 @@ public class ProcessActivity extends Activity {
 		});
 
 		listViews.get(3).findViewById(R.id.btnWeibo).setOnClickListener(new View.OnClickListener() {
+			@Override
 			public void onClick(View v) {
 				// TODO:此处添加分享函数，参照上面保存到本地事件函数，获取bitmap;
 				Toast.makeText(ProcessActivity.this, "函数未集成，王坤加油", Toast.LENGTH_LONG).show();
@@ -286,23 +285,21 @@ public class ProcessActivity extends Activity {
 		ivAdd = (ImageView) listViews.get(0).findViewById(R.id.ivAdd1);
 
 		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				System.out.println("kevin Start Tracking Touch-->");
+				mIp.setLevel(seekbarLevel);
+				callProcessPic();
 			}
 
+			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {
 				System.out.println("kevin Stop Tracking Touch-->");
 			}
 
+			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				System.out.println("kevin progress changed-->" + progress);
-				// textView1.getPaint().setFakeBoldText(true);
-				// textView1.setTextColor(Color.rgb(255, 255, 255));
-				// textView 点击更新
-				// textView_e tv_2 = textView_e.TV_TOUCH_POINT;
-				// fresh_textView(tv_2);
-
-				// textView1.setText(String.format("色彩保留等级: %d", progress));
 				seekbarLevel = progress;
 			}
 		});
@@ -313,6 +310,8 @@ public class ProcessActivity extends Activity {
 			public void onClick(View v) {
 				if (seekbarLevel > 0) {
 					seekBar.setProgress(--seekbarLevel);
+					mIp.setLevel(seekbarLevel);
+					callProcessPic();
 				}
 			}
 		});
@@ -323,21 +322,8 @@ public class ProcessActivity extends Activity {
 			public void onClick(View v) {
 				if (seekbarLevel < seekbarMaxLevel) {
 					seekBar.setProgress(++seekbarLevel);
-				}
-			}
-		});
-
-		// 判断是否已经选好图片执行不同操作
-		ivProcess.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				// textView_e tv_3 = textView_e.TV_CONFIRM;
-				// fresh_textView(tv_3);
-				if (picSelected) {
-					// 已经选择了图片，处理图片在ScaleImageView中的监听函数中。
-				} else {
-					// pick_another_picture();
+					mIp.setLevel(seekbarLevel);
+					callProcessPic();
 				}
 			}
 		});
@@ -346,7 +332,8 @@ public class ProcessActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				getParameters();
+				setParameters();
+				callProcessPic();
 			}
 		});
 
@@ -369,15 +356,16 @@ public class ProcessActivity extends Activity {
 				saveImageToGallery(ProcessActivity.this, ((BitmapDrawable) ivProcess.getDrawable()).getBitmap());
 			}
 		});
-		
+
 		btnUndo.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				ivProcess.undo();
+				mIp.delTouchPoint();
+				callProcessPic();
 			}
 		});
-		
+
 		btnPickanother.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -388,36 +376,13 @@ public class ProcessActivity extends Activity {
 		mHandler = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
-				if (msg.what == 1) {
-					getParameters();
-					ivProcess.setParameters(seekbarLevel, bgColor.ordinal(), isBlur);
-					ivProcess.processPicture();
+				if (msg.what == 0) {
+					pd.dismiss();// 关闭ProgressDialog
+					ivProcess.setImageBitmap(BitmapStore.getBitmapProcessed());
 				}
 				super.handleMessage(msg);
 			}
 		};
-
-		myThread = new Thread(new Runnable() {
-			public void run() {
-				while (true) {
-					try {
-						Thread.sleep(400);
-						if (statusChanged()) {
-							Log.i("chz", "status changed");
-							Message msg = mHandler.obtainMessage();
-							msg.what = 1;
-							msg.sendToTarget();
-							updateStatus();
-						}
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-
-			}
-		});
-		myThread.start();
 	}
 
 	private void pick_another_picture() {
@@ -435,27 +400,7 @@ public class ProcessActivity extends Activity {
 		startActivityForResult(intent, 1);
 	}
 
-	// private void fresh_textView(textView_e tv_type) {
-	// textView.getPaint().setFakeBoldText(true);
-	// textView.setTextColor(Color.rgb(255, 255, 255));
-	//
-	// switch (tv_type) {
-	// case TV_CONFIRM:
-	// textView.setText(String.format("请点击确认按钮"));
-	// break;
-	// case TV_TOUCH_POINT:
-	// textView.setText(String.format("请点击需要突出显示的区域可以双手放大、缩小操作区域"));
-	// break;
-	// case TV_CHANGE_LEVEL:
-	// textView.setText(String.format("请选择处理强度级别"));
-	// break;
-	// case TV_SELECT_PIC:
-	// default:
-	// textView.setText(String.format("请选择一张图片"));
-	// break;
-	// }
-	// }
-
+	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		if (currentSelectedColor != null) {
@@ -464,13 +409,16 @@ public class ProcessActivity extends Activity {
 			currentSelectedColor.setBackground(bgShape);
 			currentSelectedColor = null;
 		}
+		pd.dismiss();
 	}
 
+	@Override
 	protected void onResume() {
 		super.onResume();
 	};
 
 	// 在这里设置imageview的图片，因为这时候imageview的大小才能获取到，oncreat的时候获取不到。
+	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
 		if (selectedNew) {
@@ -516,8 +464,8 @@ public class ProcessActivity extends Activity {
 		Bitmap scaledBitmap = bgimage;
 		// 如果图片过大，压缩处理
 		if (bgimage.getWidth() > PIC_MAX_WIDTH || bgimage.getHeight() > PIC_MAX_HEIGHT) {
-			float wRatio = PIC_MAX_WIDTH / (float) (bgimage.getWidth());
-			float hRatio = PIC_MAX_HEIGHT / (float) (bgimage.getHeight());
+			float wRatio = PIC_MAX_WIDTH / (bgimage.getWidth());
+			float hRatio = PIC_MAX_HEIGHT / (bgimage.getHeight());
 			float scaleRatio = wRatio > hRatio ? hRatio : wRatio;
 			matrix = new Matrix();
 			matrix.postScale(scaleRatio, scaleRatio);
@@ -567,6 +515,7 @@ public class ProcessActivity extends Activity {
 		return true;
 	}
 
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		showDialog(this, item.getItemId());
 		return true;
@@ -579,6 +528,7 @@ public class ProcessActivity extends Activity {
 			builder.setTitle("关于");
 			builder.setMessage("声明：\nCopyright © 2016 TrianglePage.\n All Rights Reserved.\n三角页工作室 版权所有");
 			builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+				@Override
 				public void onClick(DialogInterface dialog, int whichButton) {
 					// setTitle("你懂了");
 				}
@@ -595,6 +545,7 @@ public class ProcessActivity extends Activity {
 			builder.setTitle("更新");
 			builder.setMessage("目前已是最新版本");
 			builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+				@Override
 				public void onClick(DialogInterface dialog, int whichButton) {
 				}
 			});

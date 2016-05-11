@@ -27,10 +27,10 @@ typedef enum
 	YELLOW =4,
 };
 void Grow(IplImage* src,IplImage* seed, int t1);
-JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
+JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ImageProcesser_ImgFun(
 		JNIEnv* env, jobject obj, jintArray buf, int w, int h, jintArray touchPoints, int touchPointsCount, int level, int bgColor, int bgBlur);
 
-JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ScaleImageView_ImgFun(
+JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ImageProcesser_ImgFun(
 		JNIEnv* env, jobject obj, jintArray buf, int w, int h, jintArray touchPoints, int touchPointsCount, int level, int bgColor, int bgBlur) {
 	jint *cbuf;
 	cbuf = env->GetIntArrayElements(buf, NULL);
