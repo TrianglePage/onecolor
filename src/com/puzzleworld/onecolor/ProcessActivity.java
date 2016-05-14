@@ -739,7 +739,7 @@ public class ProcessActivity extends Activity {
 	private void InitImageView() {
 		cursor = (ImageView) findViewById(R.id.cursor);
 		Matrix matrix = new Matrix();
-		matrix.postTranslate(40, 0);
+		matrix.postTranslate(20, 0);
 		cursor.setImageMatrix(matrix);// 设置动画初始位置
 	}
 
@@ -797,7 +797,7 @@ public class ProcessActivity extends Activity {
 	 */
 	public class MyOnPageChangeListener implements OnPageChangeListener {
 		WindowManager wm = ProcessActivity.this.getWindowManager();
-		int screanWidth = wm.getDefaultDisplay().getWidth() - 60;
+		int screanWidth = wm.getDefaultDisplay().getWidth() - 4;
 		int step = screanWidth / 4;
 		int fromX = 0;
 		int toX = 0;

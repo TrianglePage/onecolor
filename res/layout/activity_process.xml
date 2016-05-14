@@ -159,10 +159,10 @@
                 android:layout_width="fill_parent"
                 android:layout_height="0dp"
                 android:layout_weight="0.9"
-                android:background="@drawable/button_bar"
+                android:background="#FF36AA9D"
                 android:orientation="horizontal"
-                android:paddingLeft="20dp"
-                android:paddingRight="20dp" >
+                android:paddingLeft="0dp"
+                android:paddingRight="0dp" >
 
                 <TextView
                     android:id="@+id/text1"
@@ -172,6 +172,11 @@
                     android:gravity="center"
                     android:text=""
                     android:textColor="#000000"
+                    android:background="@drawable/process_pic"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
                     android:textSize="22.0dip" />
 
                 <TextView
@@ -182,6 +187,11 @@
                     android:gravity="center"
                     android:text=""
                     android:textColor="#000000"
+                    android:background="@drawable/add_text"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
                     android:textSize="22.0dip" />
 
                 <TextView
@@ -192,6 +202,11 @@
                     android:gravity="center"
                     android:text=""
                     android:textColor="#000000"
+                    android:background="@drawable/choose_color"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
                     android:textSize="22.0dip" />
 
                 <TextView
@@ -202,6 +217,11 @@
                     android:gravity="center"
                     android:text=""
                     android:textColor="#000000"
+                    android:background="@drawable/share"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
                     android:textSize="22.0dip" />
             </LinearLayout>
         </LinearLayout>
