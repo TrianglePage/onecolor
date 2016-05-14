@@ -48,21 +48,6 @@
             android:label="@string/app_name"
             android:theme="@android:style/Theme.NoTitleBar" >
         </activity>
-        <activity
-            android:name=".ResultPreviewActivity"
-            android:label="@string/app_name"
-            android:theme="@android:style/Theme.NoTitleBar" >
-            <intent-filter>
-                <action android:name="com.sina.weibo.sdk.action.ACTION_SDK_REQ_ACTIVITY"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".ShareActivity"
-            android:label="@string/app_name"
-            android:theme="@android:style/Theme.Holo" >
-        </activity>
 
         </application>
 

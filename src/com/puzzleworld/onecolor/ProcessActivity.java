@@ -45,6 +45,7 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -93,6 +94,8 @@ public class ProcessActivity extends Activity {
 	private TextView t1, t2, t3, t4;// 页卡头标
 	private int currIndex = 0;// 当前页卡编号
 	private ProgressDialog pd;
+	private ShareManager sm;
+	private String mMoodString;
 
 	private enum textView_e {
 		TV_SELECT_PIC, TV_CHANGE_LEVEL, TV_TOUCH_POINT, TV_CONFIRM, TV_MAX_NUM
@@ -201,6 +204,35 @@ public class ProcessActivity extends Activity {
 		btnPickanother = (ImageView) findViewById(R.id.ivChoosepic);
 		cbIsBlur = (CheckBox) listViews.get(2).findViewById(R.id.cbBlur);
 		bgColor = backgroundColor_e.BG_GRAY;
+		sm = new ShareManager(this);
+		mMoodString = null;
+
+		mHandler = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				if (msg.what == 0) {
+					pd.dismiss();// 关闭ProgressDialog
+					Bitmap bmp = BitmapStore.getBitmapProcessed();
+					if (mMoodString != null) {
+						bmp = mIp.addString(mMoodString, bmp);
+						BitmapStore.setBitmapWithString(bmp);
+					}
+					ivProcess.setImageBitmap(bmp);
+				}
+				super.handleMessage(msg);
+			}
+		};
+
+		listViews.get(1).findViewById(R.id.btnConfirm).setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				EditText et = (EditText) listViews.get(1).findViewById(R.id.editText1);
+				mMoodString = et.getText().toString();
+				callProcessPic();
+			}
+		});
 
 		listViews.get(2).findViewById(R.id.bgColorGray).setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -252,7 +284,9 @@ public class ProcessActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				// TODO:此处添加分享函数，参照上面保存到本地事件函数，获取bitmap;
-				Toast.makeText(ProcessActivity.this, "函数未集成，王坤加油", Toast.LENGTH_LONG).show();
+				// Toast.makeText(ProcessActivity.this, "函数未集成，王坤加油",
+				// Toast.LENGTH_LONG).show();
+				sm.shareToWechat();
 			}
 		});
 
@@ -260,7 +294,9 @@ public class ProcessActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				// TODO:此处添加分享函数，参照上面保存到本地事件函数，获取bitmap;
-				Toast.makeText(ProcessActivity.this, "函数未集成，王坤加油", Toast.LENGTH_LONG).show();
+				// Toast.makeText(ProcessActivity.this, "函数未集成，王坤加油",
+				// Toast.LENGTH_LONG).show();
+				sm.shareToWechatFriends();
 			}
 		});
 
@@ -268,7 +304,9 @@ public class ProcessActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				// TODO:此处添加分享函数，参照上面保存到本地事件函数，获取bitmap;
-				Toast.makeText(ProcessActivity.this, "函数未集成，王坤加油", Toast.LENGTH_LONG).show();
+				// Toast.makeText(ProcessActivity.this, "函数未集成，王坤加油",
+				// Toast.LENGTH_LONG).show();
+				sm.shareToWeibo();
 			}
 		});
 
@@ -283,6 +321,23 @@ public class ProcessActivity extends Activity {
 		seekBar.setMax(seekbarMaxLevel);
 		ivSubtraction = (ImageView) listViews.get(0).findViewById(R.id.ivSubtraction1);
 		ivAdd = (ImageView) listViews.get(0).findViewById(R.id.ivAdd1);
+
+		ivProcess.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Bitmap bmp = BitmapStore.getBitmapProcessed();
+				if (bmp != null) {
+					if (mMoodString != null) {
+						bmp = mIp.addString(mMoodString, bmp);
+					}
+					ivProcess.setImageBitmap(bmp);
+				}
+
+				Log.i("chz", "iv onclick");
+			}
+		});
 
 		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			@Override
@@ -344,8 +399,8 @@ public class ProcessActivity extends Activity {
 				// textView 点击更新
 				// textView_e tv_1 = textView_e.TV_CHANGE_LEVEL;
 				// fresh_textView(tv_1);
-
-				ivProcess.setImageBitmapEx(showBitmap, true);
+				mIp.clearTouchPoint();
+				ivProcess.setImageBitmap(showBitmap);
 			}
 		});
 
@@ -353,7 +408,7 @@ public class ProcessActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				saveImageToGallery(ProcessActivity.this, ((BitmapDrawable) ivProcess.getDrawable()).getBitmap());
+				saveImageToGallery(ProcessActivity.this, BitmapStore.getFinalProcessedBitmap());
 			}
 		});
 
@@ -373,16 +428,6 @@ public class ProcessActivity extends Activity {
 			}
 		});
 
-		mHandler = new Handler() {
-			@Override
-			public void handleMessage(Message msg) {
-				if (msg.what == 0) {
-					pd.dismiss();// 关闭ProgressDialog
-					ivProcess.setImageBitmap(BitmapStore.getBitmapProcessed());
-				}
-				super.handleMessage(msg);
-			}
-		};
 	}
 
 	private void pick_another_picture() {

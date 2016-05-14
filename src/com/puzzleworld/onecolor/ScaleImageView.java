@@ -19,7 +19,6 @@ public class ScaleImageView extends ImageView {
 	private float mTouchX = 0;
 	private float mTouchY = 0;
 	private int[] touchPoints = new int[20];// 保存点击座标，顺序为x1，y1，x2，y2.。。
-	private int touchPointsCount = 0;
 
 	static final int NONE = 0;
 	static final int DRAG = 1;
@@ -67,7 +66,6 @@ public class ScaleImageView extends ImageView {
 		// + "offy=" + offsetY);
 		matrix.postScale(scale, scale, 0, 0);
 		matrix.postTranslate(offsetX, offsetY);
-		touchPointsCount = 0;
 
 		setImageMatrix(matrix);
 	}
@@ -156,16 +154,15 @@ public class ScaleImageView extends ImageView {
 				if ((int) actualX > 0 && (int) actualY > 0 && (int) actualX < w && (int) actualY < h) {
 					ImageProcesser ip = ImageProcesser.getInstance();
 					ip.addTouchPoint((int) actualX, (int) actualY);
-					this.setImageBitmap(ip.processImage(showBitmap));
+					Bitmap processedImg = ip.processImage(showBitmap);
+					this.setImageBitmap(processedImg);
+					BitmapStore.setBitmapProcessed(processedImg);
+					Log.i("chz", "iv onclick processed");
 				}
 			}
 		}
 		setImageMatrix(matrix);
-		if (misForProcessPic) {
-			return true;
-		} else {
-			performClick();// 显式调用这个函数，才会调到注册的onClick函数。
-			return false;
-		}
+		performClick();// 显式调用这个函数，才会调到注册的onClick函数。
+		return true;
 	}
 }

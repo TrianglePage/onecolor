@@ -32,7 +32,7 @@
         </EditText>
 
         <ImageView
-            android:id="@+id/ivSubtraction1"
+            android:id="@+id/btnConfirm"
             android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:layout_marginBottom="0dp"
