@@ -86,9 +86,9 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ImageProcesser_ImgFun(
 
 	CvSeq* contours = 0;
 
-	cvCvtColor(src, gray, CV_RGB2GRAY);
+	cvCvtColor(src, gray, CV_BGR2GRAY);
 
-	cvCvtColor(src, hsv, CV_RGB2HSV);
+	cvCvtColor(src, hsv, CV_BGR2HSV_FULL);//CV_RGB2HSV
 
 	cvSplit(hsv, h_plane, s, v, 0);
 
