@@ -20,11 +20,11 @@ extern "C" {
 Mat RegionGrow(Mat src, CvPoint pt, int th);
 typedef enum
 {
-	RED =0,
-	BLUE=1,
-	GREEN=2,
-	PURPLE=3,
-	YELLOW =4,
+	gray =0,
+	GREEN=1,
+	BLUE =2,
+	YELLOW=3,
+	PURPLE=4,
 };
 void Grow(IplImage* src,IplImage* seed, int t1);
 JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ImageProcesser_ImgFun(
@@ -77,6 +77,8 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ImageProcesser_ImgFun(
 	IplImage* b = cvCreateImage(cvSize(size_src.width, size_src.height),
 			src->depth, 1);
 
+	IplConvKernel* structure = cvCreateStructuringElementEx(7, 7, 3,3,CV_SHAPE_ELLIPSE);
+
 	cvZero(dst);
 	cvZero(maskImage);
 
@@ -107,15 +109,17 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ImageProcesser_ImgFun(
 				CV_FILLED, 8);
 	}
 	*/
-	//cvDilate(maskImage,maskImage,NULL,1);
-	//cvErode(maskImage,maskImage,NULL,1);
+	cvDilate(maskImage,maskImage,structure,1);
+	cvErode(maskImage,maskImage,structure,1);
 	cvCopy(src, show, maskImage);
 
 	cvThreshold(maskImage, mask_inv, 1, 128, CV_THRESH_BINARY_INV);
 
 	cvCopy(gray, gray_mask, mask_inv);
 
-	bgBlur = 1;
+	//cvDilate()
+
+	//bgBlur = 1;
 	if(bgBlur == 1)
 	{
 		cvSmooth(gray_mask,gray_mask,CV_BLUR,11,11,0,0);
@@ -126,15 +130,38 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ImageProcesser_ImgFun(
 	Mat mat_r(r, 0);
 	Mat mat_g(g, 0);
 	Mat mat_b(b, 0);
-	cvSplit(show, r, g, b, 0);
+	cvSplit(show, b, g, r, 0);
 
 	Mat mat_gray_inv(gray_mask, 0);
 	mat_r = mat_gray_inv + r;
 	mat_g = mat_gray_inv + g;
 	mat_b = mat_gray_inv + b;
 
-	cvAddS(r,cvScalar(25),r);
-    cvMerge(r,g,b,0,show);
+//	gray =0,
+//	GREEN=1,
+//	BLUE =2,
+//	YELLOW=3,
+//	PURPLE=4,
+
+	switch(bgColor){
+
+		case 0:break;
+		case 1:cvAddS(g,cvScalar(25),g);
+			   break;
+		case 2:cvAddS(b,cvScalar(25),b);
+			   break;
+		case 3:cvAddS(g,cvScalar(25),g);
+			   cvAddS(r,cvScalar(25),r);
+		   	   break;
+		case 4:cvAddS(r,cvScalar(25),r);
+	   	   	   break;
+		default:break;
+
+	}
+
+	//cvAddS(r,cvScalar(25),r);
+
+    cvMerge(b,g,r,0,show);
 
 	uchar* ptr = imgData.ptr(0);
 
@@ -169,7 +196,7 @@ JNIEXPORT jintArray JNICALL Java_com_puzzleworld_onecolor_ImageProcesser_ImgFun(
 	cvReleaseImage(&r);
 	cvReleaseImage(&g);
 	cvReleaseImage(&b);
-
+	cvReleaseStructuringElement(&structure);
 	return result;
 }
 
