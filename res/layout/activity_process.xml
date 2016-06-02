@@ -11,6 +11,7 @@
         android:layout_height="50dp"
         android:background="#FF37AA9D"
         android:orientation="horizontal" >
+
         <ImageView
             android:id="@+id/ivChoosepic"
             android:layout_width="0dp"
@@ -22,13 +23,14 @@
             android:layout_weight="0.15"
             android:scaleType="fitCenter"
             android:src="@drawable/choosepic" />
-        
+
         <TextView
             android:id="@+id/tvSpace"
             android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:layout_weight="0.7"
-            android:paddingLeft="20dp" />
+            android:paddingLeft="20dp"
+            android:paddingRight="0dp" />
 
         <ImageView
             android:id="@+id/ivMenu"
@@ -76,10 +78,11 @@
                 android:layout_marginBottom="150dp"
                 android:layout_marginRight="20dp"
                 android:layout_weight="0"
-                android:visibility="invisible"
                 android:background="@drawable/undo1"
                 android:paddingLeft="0dp"
-                android:scaleType="center" />
+                android:paddingRight="0dp"
+                android:scaleType="center"
+                android:visibility="invisible" />
 
             <ImageButton
                 android:id="@+id/btnRedo1"
@@ -89,10 +92,11 @@
                 android:layout_marginBottom="110dp"
                 android:layout_marginRight="20dp"
                 android:layout_weight="0"
-                android:visibility="invisible"
                 android:background="@drawable/redo"
                 android:paddingLeft="0dp"
-                android:scaleType="center" />
+                android:paddingRight="0dp"
+                android:scaleType="center"
+                android:visibility="invisible" />
 
             <ImageButton
                 android:id="@+id/btnCancel1"
@@ -102,10 +106,11 @@
                 android:layout_marginBottom="70dp"
                 android:layout_marginRight="20dp"
                 android:layout_weight="0"
-                android:visibility="invisible"
                 android:background="@drawable/cancel1"
                 android:paddingLeft="0dp"
-                android:scaleType="center" />
+                android:paddingRight="0dp"
+                android:scaleType="center"
+                android:visibility="invisible" />
 
             <ImageButton
                 android:id="@+id/btnSave"
@@ -115,10 +120,11 @@
                 android:layout_marginBottom="30dp"
                 android:layout_marginRight="20dp"
                 android:layout_weight="0"
-                android:visibility="invisible"
                 android:background="@drawable/save"
                 android:paddingLeft="0dp"
-                android:scaleType="center" />
+                android:paddingRight="0dp"
+                android:scaleType="center"
+                android:visibility="invisible" />
         </FrameLayout>
     </LinearLayout>
 
@@ -126,9 +132,9 @@
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="0.20"
+        android:flipInterval="30"
         android:orientation="vertical"
-            android:flipInterval="30"
-            android:persistentDrawingCache="animation" >
+        android:persistentDrawingCache="animation" >
 
         <android.support.v4.view.ViewPager
             android:id="@+id/vPager"
@@ -144,16 +150,18 @@
             android:layout_height="0dp"
             android:layout_weight="0.55"
             android:background="@drawable/button_bar"
-            android:orientation="vertical" 
             android:flipInterval="30"
-            android:persistentDrawingCache="animation">
-        
+            android:orientation="vertical"
+            android:persistentDrawingCache="animation" >
+
             <ImageView
                 android:id="@+id/cursor"
                 android:layout_width="fill_parent"
                 android:layout_height="3dp"
+                android:background="#FFFFFFFF"
                 android:scaleType="matrix"
                 android:src="@drawable/animation" />
+
             <LinearLayout
                 android:id="@+id/linearLayout1"
                 android:layout_width="fill_parent"
@@ -168,60 +176,60 @@
                     android:id="@+id/text1"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
-                    android:layout_weight="1.0"
-                    android:gravity="center"
-                    android:text=""
-                    android:textColor="#000000"
-                    android:background="@drawable/process_pic"
-                    android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/process_pic"
+                    android:gravity="center"
+                    android:text=""
+                    android:textColor="#000000"
                     android:textSize="22.0dip" />
 
                 <TextView
                     android:id="@+id/text2"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
-                    android:layout_weight="1.0"
-                    android:gravity="center"
-                    android:text=""
-                    android:textColor="#000000"
-                    android:background="@drawable/add_text"
-                    android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/add_text"
+                    android:gravity="center"
+                    android:text=""
+                    android:textColor="#000000"
                     android:textSize="22.0dip" />
 
                 <TextView
                     android:id="@+id/text3"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
-                    android:layout_weight="1.0"
-                    android:gravity="center"
-                    android:text=""
-                    android:textColor="#000000"
-                    android:background="@drawable/choose_color"
-                    android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/choose_color"
+                    android:gravity="center"
+                    android:text=""
+                    android:textColor="#000000"
                     android:textSize="22.0dip" />
 
                 <TextView
                     android:id="@+id/text4"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
-                    android:layout_weight="1.0"
-                    android:gravity="center"
-                    android:text=""
-                    android:textColor="#000000"
-                    android:background="@drawable/share"
-                    android:layout_marginTop="5dp"
                     android:layout_marginBottom="5dp"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/share"
+                    android:gravity="center"
+                    android:text=""
+                    android:textColor="#000000"
                     android:textSize="22.0dip" />
             </LinearLayout>
         </LinearLayout>
