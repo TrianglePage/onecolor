@@ -118,6 +118,7 @@ public class ProcessActivity extends Activity {
         LinearLayout bklayout = (LinearLayout) findViewById(R.id.layoutProcessPic);
         bklayout.setBackground(new BitmapDrawable(bkpic));
         ip.delTouchPoint();
+        ip.setBlur(0);
     }
 
     private void switchColorStatus(View tempColor) {
@@ -174,6 +175,11 @@ public class ProcessActivity extends Activity {
     }
 
     private void callProcessPic() {
+        if (BitmapStore.getBitmapOriginal() == null) {
+            Toast.makeText(ProcessActivity.this, "请选择一张图片哦😉", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         /* 显示ProgressDialog */
         pd = ProgressDialog.show(ProcessActivity.this, "请稍后", "正在处理……");
         /* 开启一个新线程，在新线程里执行耗时的方法 */
@@ -198,6 +204,7 @@ public class ProcessActivity extends Activity {
         picSelected = false;
         mIp = ImageProcesser.getInstance();
         ivProcess = (ScaleImageView) findViewById(R.id.ivProcess);
+        ivProcess.setContext(this);
         btnRestore = (ImageButton) findViewById(R.id.btnCancel1);
         btnUndo = (ImageButton) findViewById(R.id.btnUndo1);
         btnRedo = (ImageButton) findViewById(R.id.btnRedo1);
@@ -214,6 +221,10 @@ public class ProcessActivity extends Activity {
                 if (msg.what == 0) {
                     pd.dismiss();// 关闭ProgressDialog
                     Bitmap bmp = BitmapStore.getBitmapProcessed();
+                    if (bmp == null) {
+                        Toast.makeText(ProcessActivity.this, "请选择一张图片哦😉", Toast.LENGTH_LONG).show();
+                        return;
+                    }
                     if (mMoodString != null) {
                         bmp = mIp.addString(mMoodString, bmp);
                         BitmapStore.setBitmapWithString(bmp);
@@ -409,7 +420,14 @@ public class ProcessActivity extends Activity {
 
             @Override
             public void onClick(View v) {
-                saveImageToGallery(ProcessActivity.this, BitmapStore.getFinalProcessedBitmap());
+                Bitmap lBm = BitmapStore.getFinalProcessedBitmap();
+                if (lBm == null) {
+                    Toast.makeText(ProcessActivity.this, "请选择一张图片哦😉", Toast.LENGTH_LONG).show();
+                    return;
+                } else {
+                    saveImageToGallery(ProcessActivity.this, lBm);
+                    return;
+                }
             }
         });
 
