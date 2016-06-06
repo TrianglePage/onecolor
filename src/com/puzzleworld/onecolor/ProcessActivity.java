@@ -1,7 +1,5 @@
 package com.puzzleworld.onecolor;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -545,33 +543,6 @@ public class ProcessActivity extends Activity {
 
         // Log.wtf("chz", "w=" + alignedWidth + ",h=" + alignedHeight);
         return Bitmap.createBitmap(scaledBitmap, 0, 0, alignedWidth, alignedHeight, null, true);
-    }
-
-    //// 图像压缩-质量压缩法-只支持JPG
-    private Bitmap compressImage(Bitmap image) {
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.JPEG, 100, baos);// 质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
-        int options = 100;
-        int i = 0;
-
-        // Log.d("kevin", "before compressImage Byte Count = " +
-        // baos.toByteArray().length + "Bytes");
-        while (baos.toByteArray().length / 1024 > 31) { // 循环判断如果压缩后图片是否大于31kb,大于继续压缩
-            // Log.d("kevin", "图像质量压缩处理" + i + " 次。");
-            ++i;
-            baos.reset();// 重置baos即清空baos
-            image.compress(Bitmap.CompressFormat.JPEG, options, baos);// 这里压缩options%，把压缩后的数据存放到baos中
-            options -= 10;// 每次都减少10
-        }
-        // Log.d("kevin", "after compressImage Byte Count = " +
-        // baos.toByteArray().length + "Bytes");
-
-        ByteArrayInputStream isBm = new ByteArrayInputStream(baos.toByteArray());// 把压缩后的数据baos存放到ByteArrayInputStream中
-        Bitmap bitmap = BitmapFactory.decodeStream(isBm, null, null);// 把ByteArrayInputStream数据生成图片
-        // Log.d("kevin", "after compressImage bitmap Byte Count = " +
-        // bitmap.getByteCount() + "Bytes");
-        return bitmap;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.puzzleworld.onecolor;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 
 import com.puzzleworld.onecolor.wbapi.AccessTokenKeeper;
@@ -53,7 +55,7 @@ public class ShareManager {
     /** 微博微博分享接口实例 */
     private IWeiboShareAPI mWeiboShareAPI = null;
 
-    private final int THUMB_SIZE = 200;
+    private final int THUMB_SIZE = 80;
 
     public ShareManager(Activity activity) {
         mActivity = activity;
@@ -142,17 +144,29 @@ public class ShareManager {
          * int i = 0; while ((2320*1024) <= bmp.getByteCount()) { Log.d("kevin",
          * "图像压缩处理" + i + " 次。"); ++i; bmp = createBitmapThumbnail(bmp); }
          */
-        bmp = createBitmapThumbnail(bmp);
+        // bmp = createBitmapThumbnail(bmp);
         // shareCompBitmap = compressImage(bmp);
+        // bmp = compressBitmapTo32k(bmp);
         Log.d("kevin", "after bmp Byte Count = " + bmp.getByteCount() + "Bytes");
 
+        Toast.makeText(mActivity, "分享图片大小:" + bmp.getByteCount() / 1024 + "kb", Toast.LENGTH_SHORT).show();
         // 初始化WXImageObject和WXMediaMessage对象
         WXImageObject imgObj = new WXImageObject(bmp);
         WXMediaMessage msg = new WXMediaMessage();
         msg.mediaObject = imgObj;
         Log.i("chz", "shareWechat:" + flag);
         // 设置缩略图
-        Bitmap thumbBmp = Bitmap.createScaledBitmap(bmp, THUMB_SIZE, THUMB_SIZE, true);
+        int thumbW = 0;
+        int thumbH = 0;
+        if (bmp.getWidth() > bmp.getHeight()) {
+            thumbW = THUMB_SIZE;
+            thumbH = (int) ((float) THUMB_SIZE / (float) bmp.getWidth() * bmp.getHeight());
+        } else {
+            thumbH = THUMB_SIZE;
+            thumbW = (int) ((float) THUMB_SIZE / (float) bmp.getHeight() * bmp.getWidth());
+        }
+        Bitmap thumbBmp = Bitmap.createScaledBitmap(bmp, thumbW, thumbH, true);
+        Toast.makeText(mActivity, "缩略图大小:" + thumbBmp.getByteCount() / 1024 + "kb", Toast.LENGTH_SHORT).show();
         bmp.recycle();
         msg.thumbData = Util.bmpToByteArray(thumbBmp, true);
 
@@ -218,8 +232,8 @@ public class ShareManager {
         int width = bitMap.getWidth();
         int height = bitMap.getHeight();
         // 设置想要的大小
-        int newWidth = 480;
-        int newHeight = 480;
+        int newWidth = 1024;
+        int newHeight = 1024;
 
         Log.d("kevin", "kevin createBitmapThumbnail,  w = " + width + ", h = " + height);
         // 计算缩放比例
@@ -230,8 +244,49 @@ public class ShareManager {
         Matrix matrix = new Matrix();
         matrix.postScale(scaleRatio, scaleRatio);
         // 得到新的图片
-        Bitmap newBitMap = Bitmap.createBitmap(bitMap, 0, 0, width, height, matrix, true);
-        return newBitMap;
+        Bitmap newBitMap = Bitmap.createBitmap(bitMap, 0, 0, (int) (width * scaleRatio), (int) (height * scaleRatio),
+                matrix, true);
+        Bitmap compressedBmp = compressImage(newBitMap);
+        return compressedBmp;
+    }
+
+    //// 图像压缩-质量压缩法-只支持JPG
+    private Bitmap compressImage(Bitmap image) {
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 100, baos);// 质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
+        int options = 100;
+        int i = 0;
+
+        // Log.d("kevin", "before compressImage Byte Count = " +
+        // baos.toByteArray().length + "Bytes");
+        while (baos.toByteArray().length / 1024 > 31) { // 循环判断如果压缩后图片是否大于31kb,大于继续压缩
+            // Log.d("kevin", "图像质量压缩处理" + i + " 次。");
+            ++i;
+            baos.reset();// 重置baos即清空baos
+            image.compress(Bitmap.CompressFormat.JPEG, options, baos);// 这里压缩options%，把压缩后的数据存放到baos中
+            options -= 30;// 每次都减少10
+            Toast.makeText(mActivity, "压缩大小:" + baos.toByteArray().length / 1024, Toast.LENGTH_SHORT).show();
+        }
+        // Log.d("kevin", "after compressImage Byte Count = " +
+        // baos.toByteArray().length + "Bytes");
+        if (baos != null) {
+            try {
+                baos.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+        // ByteArrayInputStream isBm = new
+        // ByteArrayInputStream(baos.toByteArray());//
+        // 把压缩后的数据baos存放到ByteArrayInputStream中
+        // Bitmap bitmap = BitmapFactory.decodeStream(isBm, null, null);//
+        // 把ByteArrayInputStream数据生成图片
+        // Log.d("kevin", "after compressImage bitmap Byte Count = " +
+        // bitmap.getByteCount() + "Bytes");
+        return image;
     }
 
     /**
