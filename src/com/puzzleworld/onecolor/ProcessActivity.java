@@ -504,6 +504,8 @@ public class ProcessActivity extends Activity {
                 align = 2 << (seekbarLevel + 1);
                 showBitmap = scaleAndAlignBitmap(bm, align);
                 BitmapStore.setBitmapOriginal(showBitmap);
+                BitmapStore.setBitmapProcessed(null);
+                BitmapStore.setBitmapWithString(null);
                 picSelected = true;
                 selectedNew = true;
                 setBlurBackground();
